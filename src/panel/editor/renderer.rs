@@ -1,10 +1,10 @@
-use ratatui::Frame;
+use crate::panel::editor::editor::Editor;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::Paragraph;
+use ratatui::Frame;
 use ropey::Rope;
-use crate::panel::editor::editor::Editor;
 
 fn make_line_spans(top_line: usize, max_line: usize, rope: &Rope) -> Vec<Line<'static>> {
     let mut lines_spans: Vec<Line> = Vec::new();

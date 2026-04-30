@@ -1,6 +1,6 @@
-use ratatui::Frame;
-use ratatui::layout::Rect;
 use crate::panel::panel::Panel;
+use ratatui::layout::Rect;
+use ratatui::Frame;
 
 #[derive(Debug)]
 pub struct Workspace {

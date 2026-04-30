@@ -1,12 +1,12 @@
-use std::io;
-use std::io::StdoutLock;
-use std::time::Duration;
-use crossterm::event::{DisableMouseCapture, EnableMouseCapture, KeyboardEnhancementFlags, PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags};
+use crate::moose::Moose;
+use crate::panel::editor::editor::Editor;
+use crossterm::event::{DisableMouseCapture, KeyboardEnhancementFlags, PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen};
 use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
-use crate::moose::Moose;
-use crate::panel::editor::editor::Editor;
+use std::io;
+use std::io::StdoutLock;
+use std::time::Duration;
 
 mod panel;
 mod moose;

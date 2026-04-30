@@ -1,6 +1,4 @@
-use std::time::Duration;
-
-use crossterm::event::{self, Event, KeyCode, KeyEvent, MouseEvent, KeyModifiers};
+use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent};
 
 #[derive(Debug, Clone)]
 pub enum InputEvent {

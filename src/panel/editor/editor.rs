@@ -1,11 +1,11 @@
-use ratatui::Frame;
-use ratatui::layout::Rect;
-use ropey::Rope;
 use crate::handler::input::InputEvent;
 use crate::panel::editor::event::handle_event;
 use crate::panel::editor::input::handle_input;
 use crate::panel::editor::renderer::render;
 use crate::panel::panel::Panel;
+use ratatui::layout::Rect;
+use ratatui::Frame;
+use ropey::Rope;
 
 #[derive(Debug)]
 pub struct Editor {

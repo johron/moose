@@ -1,7 +1,7 @@
 use crossterm::event::Event;
 
-use crate::handler::{input, workspace::Workspace};
 use crate::handler::input::InputEvent;
+use crate::handler::{input, workspace::Workspace};
 
 #[derive(Debug)]
 pub struct Moose {

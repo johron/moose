@@ -1,7 +1,7 @@
-use std::fmt::Debug;
-use ratatui::Frame;
-use ratatui::layout::Rect;
 use crate::handler::input::InputEvent;
+use ratatui::layout::Rect;
+use ratatui::Frame;
+use std::fmt::Debug;
 
 pub trait Panel: Debug {
     fn init(&mut self);
