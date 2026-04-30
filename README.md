@@ -15,6 +15,7 @@
 ```
 
 ## TODO
-- [ ] Input
-- [ ] Drawing multiple panels in one workspace
+- [x] Input
+- [ ] Config system
+- [ ] Drawing multiple panels in one workspace, layout etc
 - [ ] Lua plugin system
