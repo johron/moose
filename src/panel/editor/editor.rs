@@ -2,19 +2,22 @@ use ratatui::Frame;
 use ratatui::layout::Rect;
 use ropey::Rope;
 use crate::handler::input::InputEvent;
+use crate::panel::editor::event::handle_event;
+use crate::panel::editor::input::handle_input;
 use crate::panel::editor::renderer::render;
 use crate::panel::panel::Panel;
 
 #[derive(Debug)]
 pub struct Editor {
     init: bool,
-    rope: Rope,
-    scroll_offset: usize,
-    cursors: Vec<Cursor>,
-    mode: EditorMode,
+    pub rope: Rope,
+    pub scroll_offset: usize,
+    pub cursors: Vec<Cursor>,
+    pub mode: EditorMode,
 }
 
 #[derive(Debug)]
+#[derive(Clone)]
 pub struct Cursor {
     pub line: usize,
     pub col: usize,
@@ -40,7 +43,7 @@ impl Cursor {
 }
 
 #[derive(Debug)]
-enum EditorMode {
+pub enum EditorMode {
     Normal,
     Insert,
     Command,
@@ -72,8 +75,28 @@ impl Panel for Editor {
     }
 
     fn input(&mut self, input: InputEvent) {
-        println!("{:?}", input)
+        let event = handle_input(self, input);
+        handle_event(self, event);
     }
+}
+
+#[derive(Debug)]
+pub enum EditorEdit {
+    Insert(char),
+    Delete,
+    Newline,
+    Tab,
+    Backtab
+}
+
+#[derive(Debug)]
+pub enum EditorEvent {
+    Edit(EditorEdit), // relative
+    CursorMove(usize, usize), // x, y, relative
+    Scroll(usize, usize), // x, y, relative
+    Mode(EditorMode),
+    Quit,
+    None,
 }
 
 impl Editor {
@@ -82,20 +105,8 @@ impl Editor {
             init: false,
             rope: Rope::new(),
             scroll_offset: 0,
-            cursors: Vec::new(),
+            cursors: vec![Cursor::new()],
             mode: EditorMode::Normal,
         }
-    }
-
-    pub fn get_rope(&self) -> &Rope {
-        &self.rope
-    }
-
-    pub fn get_scroll_offset(&self) -> usize {
-        self.scroll_offset
-    }
-
-    pub fn get_cursors(&self) -> &Vec<Cursor> {
-        &self.cursors
     }
 }

@@ -1,6 +1,7 @@
 use crossterm::event::Event;
 
 use crate::handler::{input, workspace::Workspace};
+use crate::handler::input::InputEvent;
 
 #[derive(Debug)]
 pub struct Moose {
@@ -42,8 +43,16 @@ impl Moose {
     }
 
     pub fn handle_terminal_event(&mut self, ev: Event) {
-        println!("{:?}", ev);
         if let Some(input) = input::from_crossterm_event(ev) {
+            match input.clone() {
+                InputEvent::Char(c) => {
+                    if c == '-' {
+                        self.should_quit = true;
+                    }
+                },
+                _ => {}
+            }
+
             match self.mode {
                 GlobalMode::Panel => {
                     if let Some(workspace) = self.active_workspace() {
@@ -52,7 +61,9 @@ impl Moose {
                         }
                     }
                 },
-                GlobalMode::Normal => {} 
+                GlobalMode::Normal => {
+
+                }
             }
         }
     }

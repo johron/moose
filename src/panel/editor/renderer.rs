@@ -31,11 +31,11 @@ pub fn render(editor: &Editor, frame: &mut Frame, area: Rect) {
     let height = std::cmp::max(1, chunks[0].height as usize - 1);
 
     let max_line = std::cmp::min(
-        editor.get_rope().len_lines(),
-        editor.get_scroll_offset().saturating_add(height),
+        editor.rope.len_lines(),
+        editor.scroll_offset.saturating_add(height),
     );
 
-    let lines_spans: Vec<Line> = make_line_spans(editor.get_scroll_offset(), max_line, editor.get_rope());
+    let lines_spans: Vec<Line> = make_line_spans(editor.scroll_offset, max_line, &editor.rope);
 
     // Have to think about how I can to the multiple editor panels later, block should be set from outside, not in editor panel
     let paragraph = Paragraph::new(lines_spans);
@@ -44,9 +44,9 @@ pub fn render(editor: &Editor, frame: &mut Frame, area: Rect) {
 
     frame.render_widget(paragraph, chunks[0]);
 
-    for cursor in editor.get_cursors().iter() {
+    for cursor in editor.cursors.iter() {
         let x = chunks[0].x + 5 + cursor.col as u16; // 5 for gutter
-        let y = chunks[0].y + (cursor.line.saturating_sub(editor.get_scroll_offset())) as u16;
+        let y = chunks[0].y + (cursor.line.saturating_sub(editor.scroll_offset)) as u16;
         frame.render_widget(
             Paragraph::new("")
                 .style(Style::default()

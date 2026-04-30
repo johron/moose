@@ -26,7 +26,7 @@ fn main() -> io::Result<()> {
     enable_raw_mode()?;
 
     #[cfg(not(windows))] // keyboard enhancements don't work on windows
-    crossterm::execute!(stdout, EnterAlternateScreen, EnableMouseCapture, PushKeyboardEnhancementFlags(
+    crossterm::execute!(stdout, EnterAlternateScreen, /*EnableMouseCapture remove for now, */PushKeyboardEnhancementFlags(
         KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES
     ))?;
 
