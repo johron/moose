@@ -68,7 +68,7 @@ impl Panel for Editor {
         self.init = true;
     }
 
-    fn is_init(&self) -> bool {
+    fn is_initialized(&self) -> bool {
         self.init
     }
 
