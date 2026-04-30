@@ -8,3 +8,6 @@ ratatui = "0.29.0"
 crossterm = "0.29.0"
 ropey = "1.6.1"
 config = "0.15.19"
+serde = { version = "1.0.228", features = ["derive"] }
+dirs = "6.0.0"
+toml = "1.1.2+spec-1.1.0"

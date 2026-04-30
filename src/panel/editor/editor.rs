@@ -6,6 +6,7 @@ use crate::panel::panel::Panel;
 use ratatui::layout::Rect;
 use ratatui::Frame;
 use ropey::Rope;
+use crate::panel::editor::config::{init_config, EditorConfig};
 
 #[derive(Debug)]
 pub struct Editor {
@@ -14,6 +15,7 @@ pub struct Editor {
     pub scroll_offset: usize,
     pub cursors: Vec<Cursor>,
     pub mode: EditorMode,
+    pub config: EditorConfig,
 }
 
 #[derive(Debug)]
@@ -52,10 +54,18 @@ pub enum EditorMode {
 
 impl Panel for Editor {
     fn init(&mut self) {
-        if !self.init {
-            println!("Created a new editor panel {}", self.title());
-            self.init = true;
+        if self.init {
+            return;
         }
+        println!("Created a new editor panel {}", self.title());
+        let config = init_config();
+        if config.is_ok() {
+            self.config = config.unwrap();
+        } else {
+            eprintln!("Could not load config.. {:?}", config.err().unwrap());
+        }
+
+        self.init = true;
     }
 
     fn is_init(&self) -> bool {
@@ -107,6 +117,7 @@ impl Editor {
             scroll_offset: 0,
             cursors: vec![Cursor::new()],
             mode: EditorMode::Normal,
+            config: EditorConfig::default(),
         }
     }
 }
