@@ -1,5 +1,6 @@
 use std::io;
 use std::io::StdoutLock;
+use std::time::Duration;
 use crossterm::event::{DisableMouseCapture, EnableMouseCapture, KeyboardEnhancementFlags, PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen};
 use ratatui::backend::CrosstermBackend;
@@ -61,15 +62,20 @@ fn main() -> io::Result<()> {
 
 fn run(terminal: &mut Terminal<CrosstermBackend<StdoutLock>>, mut moose: Moose) -> io::Result<()> {
     loop {
+        if moose.should_quit() {
+            break Ok(());
+        }
+
+        while crossterm::event::poll(Duration::from_millis(10))? {
+            let ev = crossterm::event::read()?;
+            moose.handle_terminal_event(ev);
+        }
+
         terminal.draw(|frame| {
             let area = frame.area();
             if let Some(workspace) = moose.active_workspace() {
                 workspace.render(frame, area);
             }
         })?;
-
-        if moose.should_quit() {
-            break Ok(());
-        }
     }
 }

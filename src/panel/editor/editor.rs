@@ -72,7 +72,7 @@ impl Panel for Editor {
     }
 
     fn input(&mut self, input: InputEvent) {
-        todo!()
+        println!("{:?}", input)
     }
 }
 
