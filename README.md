@@ -19,5 +19,9 @@
 - [x] Config system
 - [ ] Finish editor features, newlines, tabs, cursor movement, scroll, modes
 - [ ] Figure out global modes? how will this work??
-- [ ] Drawing multiple panels in one workspace, layout etc
+- [ ] More advanced rendering
+  - [ ] Drawing multiple panels in one workspace, layout etc
+  - [ ] Command bar, should this be global, or managed per panel? registered commands may only be per panel.
 - [ ] Lua plugin system
+  - [ ] To start: Syntax highlighting for editor panel. Editor Plugins. Editor panel needs to expose a plugin API?
+  - [ ] Later: Custom panels, shortcuts, .., 
