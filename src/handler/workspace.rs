@@ -32,11 +32,15 @@ impl Workspace {
         self.panels.last_mut().unwrap().init();
     }
 
-    pub fn active_panel(&mut self) -> Option<&mut Box<dyn Panel>> {
+    pub fn active_panel_mut(&mut self) -> Option<&mut Box<dyn Panel>> {
         self.panels.get_mut(self.active)
     }
+    
+    pub fn active_panel(&self) -> Option<&Box<dyn Panel>> {
+        self.panels.get(self.active)
+    }
 
-    pub fn render(&mut self, frame: &mut Frame, area: Rect) {
+    pub fn render(&self, frame: &mut Frame, area: Rect) {
         // Add layout stuff, direction, multiple panels on one workspace
         if let Some(panel) = self.active_panel() {
             panel.render(frame, area);

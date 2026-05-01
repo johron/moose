@@ -17,7 +17,7 @@ fn main() -> io::Result<()> {
     moose.init();
     moose.add_workspace(true);
 
-    if let Some(workspace) = moose.active_workspace() {
+    if let Some(workspace) = moose.active_workspace_mut() {
         workspace.add_panel(Box::new(Editor::new()), true);
     }
 
@@ -74,9 +74,7 @@ fn run(terminal: &mut Terminal<CrosstermBackend<StdoutLock>>, mut moose: Moose) 
 
         terminal.draw(|frame| {
             let area = frame.area();
-            if let Some(workspace) = moose.active_workspace() {
-                workspace.render(frame, area);
-            }
+            moose.global_workspace.render(moose.active_workspace(), frame, area);
         })?;
     }
 }

@@ -2,7 +2,7 @@ use crate::handler::input::InputEvent;
 use crate::panel::editor::event::handle_event;
 use crate::panel::editor::input::handle_input;
 use crate::panel::editor::renderer::render;
-use crate::panel::panel::Panel;
+use crate::panel::panel::{Cursor, Panel};
 use ratatui::layout::Rect;
 use ratatui::Frame;
 use ropey::Rope;
@@ -16,32 +16,6 @@ pub struct Editor {
     pub cursors: Vec<Cursor>,
     pub mode: EditorMode,
     pub config: EditorConfig,
-}
-
-#[derive(Debug)]
-#[derive(Clone)]
-pub struct Cursor {
-    pub line: usize,
-    pub col: usize,
-    pub goal: usize,
-}
-
-impl Cursor {
-    pub fn new() -> Self {
-        Cursor {
-            line: 0,
-            col: 0,
-            goal: 0,
-        }
-    }
-
-    pub fn from(line: usize, col: usize, goal: usize) -> Self {
-        Cursor {
-            line,
-            col,
-            goal,
-        }
-    }
 }
 
 #[derive(Debug)]
@@ -75,7 +49,7 @@ impl Panel for Editor {
     }
 
     fn identity(&self) -> &str {
-        "editor"
+        "moose:editor"
     }
 
     fn title(&self) -> String {

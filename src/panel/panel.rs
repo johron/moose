@@ -12,3 +12,28 @@ pub trait Panel: Debug {
     fn render(&self, frame: &mut Frame, area: Rect);
     fn input(&mut self, input: InputEvent);
 }
+
+#[derive(Debug, Clone, Eq, Hash, PartialEq)]
+pub struct Cursor {
+    pub line: usize,
+    pub col: usize,
+    pub goal: usize,
+}
+
+impl Cursor {
+    pub fn new() -> Self {
+        Cursor {
+            line: 0,
+            col: 0,
+            goal: 0,
+        }
+    }
+
+    pub fn from(line: usize, col: usize, goal: usize) -> Self {
+        Cursor {
+            line,
+            col,
+            goal,
+        }
+    }
+}

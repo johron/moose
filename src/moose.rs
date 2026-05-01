@@ -3,12 +3,15 @@ use serde::{Deserialize, Serialize};
 use crate::handler::input::InputEvent;
 use crate::handler::{input, workspace::Workspace};
 use crate::handler::config::{char_config, ensure_config_exists, make_config};
+use crate::handler::global_workspace::GlobalWorkspace;
+use crate::panel::command_bar::command_bar::CommandBar;
 
 #[derive(Debug)]
 pub struct Moose {
+    pub global_workspace: GlobalWorkspace,
     workspaces: Vec<Workspace>,
     active: usize,
-    mode: GlobalMode,
+    mode: MooseMode,
     should_quit: bool,
     pub config: MooseConfig,
 }
@@ -27,7 +30,7 @@ impl Default for MooseConfig {
 }
 
 #[derive(Debug)]
-enum GlobalMode {
+enum MooseMode {
     Panel,
     GlobalPanel,
 }
@@ -35,9 +38,10 @@ enum GlobalMode {
 impl Moose {
     pub fn new() -> Self {
         Moose {
+            global_workspace: GlobalWorkspace::new(),
             workspaces: Vec::new(),
             active: 0,
-            mode: GlobalMode::Panel,
+            mode: MooseMode::Panel,
             should_quit: false,
             config: MooseConfig::default(),
         }
@@ -50,6 +54,8 @@ impl Moose {
         } else {
             eprintln!("Could not load moose config {:?}", config.err().unwrap());
         }
+
+        self.global_workspace.add_panel(Box::new(CommandBar::new()), true);
     }
 
     fn init_config(&self) -> Result<MooseConfig, config::ConfigError> {
@@ -67,8 +73,12 @@ impl Moose {
         }
     }
 
-    pub fn active_workspace(&mut self) -> Option<&mut Workspace> {
+    pub fn active_workspace_mut(&mut self) -> Option<&mut Workspace> {
         self.workspaces.get_mut(self.active)
+    }
+
+    pub fn active_workspace(&self) -> Option<&Workspace> {
+        self.workspaces.get(self.active)
     }
 
     pub fn should_quit(&self) -> bool {
@@ -78,11 +88,11 @@ impl Moose {
     pub fn handle_terminal_event(&mut self, ev: Event) {
         if let Some(input) = input::from_crossterm_event(ev) {
             match self.mode {
-                GlobalMode::Panel => {
+                MooseMode::Panel => {
                     let config = self.config.clone();
 
-                    if let Some(workspace) = self.active_workspace() {
-                        if let Some(panel) = workspace.active_panel() {
+                    if let Some(workspace) = self.active_workspace_mut() {
+                        if let Some(panel) = workspace.active_panel_mut() {
                             if panel.is_normal_mode() {
                                 match input {
                                     InputEvent::Char(c) => {
@@ -103,7 +113,7 @@ impl Moose {
                         }
                     }
                 },
-                GlobalMode::GlobalPanel => {
+                MooseMode::GlobalPanel => {
 
                 }
             }
