@@ -3,6 +3,7 @@ use ratatui::layout::Rect;
 use serde::{Deserialize, Serialize};
 use crate::panel::global_panel::GlobalPanel;
 use crate::handler::input::InputEvent;
+use crate::panel::command_bar::renderer::render;
 use crate::panel::panel::{Cursor, Panel};
 
 #[derive(Debug, Eq, Hash, PartialEq)]
@@ -11,6 +12,8 @@ pub struct CommandBar {
     pub cmd: String,
     pub cursor: Cursor,
     pub config: CommandBarConfig,
+    show: bool,
+    floating: bool,
 }
 
 impl CommandBar {
@@ -20,6 +23,8 @@ impl CommandBar {
             cmd: String::new(),
             cursor: Cursor::new(),
             config: CommandBarConfig::default(),
+            show: false,
+            floating: false,
         }
     }
 }
@@ -46,8 +51,7 @@ impl Panel for CommandBar {
     }
 
     fn render(&self, frame: &mut Frame, area: Rect) {
-        // render a red rectangle in the area
-        frame.render_widget(ratatui::widgets::Block::default().style(ratatui::style::Style::default().bg(ratatui::style::Color::Red)), area);
+        render(self, frame, area);
     }
 
     fn input(&mut self, input: InputEvent) {
@@ -56,7 +60,21 @@ impl Panel for CommandBar {
 }
 
 impl GlobalPanel for CommandBar {
-    
+    fn set_show(&mut self, show: bool) {
+        self.show = show;
+    }
+
+    fn is_shown(&self) -> bool {
+        self.show
+    }
+
+    fn set_floating(&mut self, floating: bool) {
+        self.floating = floating;
+    }
+
+    fn is_floating(&self) -> bool {
+        self.floating
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, Eq, Hash, PartialEq)]

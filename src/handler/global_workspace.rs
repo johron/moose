@@ -6,7 +6,6 @@ use crate::panel::global_panel::GlobalPanel;
 #[derive(Debug)]
 pub struct GlobalWorkspace {
     panels: Vec<Box<dyn GlobalPanel>>,
-    shown_vec: Vec<bool>,
     active: usize,
 }
 
@@ -14,14 +13,12 @@ impl GlobalWorkspace {
     pub fn new() -> Self {
         GlobalWorkspace {
             panels: Vec::new(),
-            shown_vec: Vec::new(),
             active: 0,
         }
     }
 
-    pub fn add_panel(&mut self, panel: Box<dyn GlobalPanel>, show: bool) {
+    pub fn add_panel(&mut self, panel: Box<dyn GlobalPanel>) {
         self.panels.push(panel);
-        self.shown_vec.push(show);
     }
 
     pub fn render(&self, child_workspace: Option<&Workspace>, frame: &mut Frame, area: Rect) {
