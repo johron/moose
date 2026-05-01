@@ -3,6 +3,7 @@ use crate::handler::workspace::workspace::Workspace;
 use crate::panel::global_panel::GlobalPanel;
 use ratatui::layout::Rect;
 use ratatui::Frame;
+use crate::handler::input::InputEvent;
 
 #[derive(Debug)]
 pub struct GlobalWorkspace {
@@ -57,5 +58,9 @@ impl GlobalWorkspace {
 
     pub fn render(&self, child_workspace: Option<&Workspace>, frame: &mut Frame, area: Rect) {
         render(self, child_workspace, frame, area);
+    }
+
+    pub fn input(&mut self, input_event: InputEvent) {
+        todo!()
     }
 }
