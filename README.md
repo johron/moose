@@ -15,14 +15,11 @@
 ```
 
 ## TODO
-- [x] Input
-- [x] Config system
 - [ ] Finish editor features, newlines, tabs, cursor movement, scroll, modes
-- [ ] Figure out global modes? how will this work??
 - [ ] More advanced rendering
   - [ ] Drawing multiple panels in one workspace, layout etc
-  - [ ] Command bar, should this be global, or managed per panel? registered commands may only be per panel.
-    - [ ] `shift + q` for å åpne global command bar. Eller så har jeg et kommandoregister der hvert panel kan registrere commands med en callback. Legg til funksjon og Panel trakt: commands som returnerer en Hashmap(cmd: str, callback: func)
+  - [ ] Global panels: Layout things. Bottom takes all width. Side panels take height - height of bottom panel. Main panel takes rest of space.
+  - [ ] kommandoregister der hvert panel kan registrere commands med en callback. Legg til funksjon og Panel trait: commands som returnerer en Hashmap(cmd: str, callback: func)
 - [ ] Lua plugin system
   - [ ] To start: Syntax highlighting for editor panel. Editor Plugins. Editor panel needs to expose a plugin API?
   - [ ] Later: Custom panels, shortcuts, .., 
