@@ -1,5 +1,5 @@
-use std::fmt::Debug;
 use crate::panel::panel::Panel;
+use std::fmt::Debug;
 
 pub trait GlobalPanel: Debug + Panel {
     fn set_show(&mut self, show: bool);

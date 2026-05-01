@@ -1,4 +1,5 @@
 use crate::handler::input::InputEvent;
+use crate::panel::editor::config::{init_config, EditorConfig};
 use crate::panel::editor::event::handle_event;
 use crate::panel::editor::input::handle_input;
 use crate::panel::editor::renderer::render;
@@ -6,7 +7,6 @@ use crate::panel::panel::{Cursor, Panel};
 use ratatui::layout::Rect;
 use ratatui::Frame;
 use ropey::Rope;
-use crate::panel::editor::config::{init_config, EditorConfig};
 
 #[derive(Debug)]
 pub struct Editor {

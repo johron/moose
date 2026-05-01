@@ -1,9 +1,8 @@
-use ratatui::Frame;
-use ratatui::layout::{Constraint, Direction, Layout, Rect};
-use crate::handler::renderer::render;
-use crate::handler::workspace::Workspace;
+use crate::handler::global_workspace::renderer::render;
+use crate::handler::workspace::workspace::Workspace;
 use crate::panel::global_panel::GlobalPanel;
-use crate::panel::panel::Panel;
+use ratatui::layout::Rect;
+use ratatui::Frame;
 
 #[derive(Debug)]
 pub struct GlobalWorkspace {

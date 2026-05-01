@@ -1,8 +1,8 @@
+use config::Config;
+use serde::Serialize;
 use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
-use config::Config;
-use serde::Serialize;
 
 fn config_file_path(file_name: String) -> PathBuf {
     let mut path = dirs::config_dir().unwrap();

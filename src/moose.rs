@@ -1,10 +1,10 @@
+use crate::handler::config::{char_config, ensure_config_exists, make_config};
+use crate::handler::global_workspace::global_workspace::GlobalWorkspace;
+use crate::handler::input::InputEvent;
+use crate::handler::{input, workspace::workspace::Workspace};
+use crate::panel::command_bar::command_bar::CommandBar;
 use crossterm::event::Event;
 use serde::{Deserialize, Serialize};
-use crate::handler::input::InputEvent;
-use crate::handler::{input, workspace::Workspace};
-use crate::handler::config::{char_config, ensure_config_exists, make_config};
-use crate::handler::global_workspace::GlobalWorkspace;
-use crate::panel::command_bar::command_bar::CommandBar;
 
 #[derive(Debug)]
 pub struct Moose {

@@ -1,6 +1,5 @@
-use config::Config;
-use serde::{Deserialize, Serialize};
 use crate::handler::config::{ensure_config_exists, make_config};
+use serde::{Deserialize, Serialize};
 
 pub fn init_config() -> Result<EditorConfig, config::ConfigError> {
     ensure_config_exists::<EditorConfig>(String::from("builtin/editor.toml")).expect("Failed to ensure config file exists");
@@ -12,6 +11,10 @@ pub fn init_config() -> Result<EditorConfig, config::ConfigError> {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct EditorConfig {
+    pub enable_mouse: bool,
+    pub enable_blinking: bool,
+    pub blink_interval: f64,
+    
     pub enter_normal_mode: String,
     pub enter_insert_mode: String,
     pub enter_command_mode: String,
@@ -25,6 +28,10 @@ pub struct EditorConfig {
 impl Default for EditorConfig {
     fn default() -> Self {
         EditorConfig {
+            enable_mouse: true,
+            enable_blinking: false,
+            blink_interval: 0.5,
+            
             enter_normal_mode: String::from("esc"),
             enter_insert_mode: String::from("char:i"),
             enter_command_mode: String::from("char:q"),

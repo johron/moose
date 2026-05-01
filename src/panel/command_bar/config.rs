@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::handler::config::{ensure_config_exists, make_config};
+use serde::{Deserialize, Serialize};
 
 pub fn init_config() -> Result<CommandBarConfig, config::ConfigError> {
     ensure_config_exists::<CommandBarConfig>(String::from("builtin/command_bar.toml")).expect("Failed to ensure config file exists");

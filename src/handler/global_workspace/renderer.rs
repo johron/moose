@@ -1,7 +1,7 @@
-use ratatui::Frame;
+use crate::handler::global_workspace::global_workspace::GlobalWorkspace;
+use crate::handler::workspace::workspace::Workspace;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
-use crate::handler::global_workspace::GlobalWorkspace;
-use crate::handler::workspace::Workspace;
+use ratatui::Frame;
 
 pub fn render(global_workspace: &GlobalWorkspace, child_workspace: Option<&Workspace>, frame: &mut Frame, area: Rect) {
     let vertical_constraints = if global_workspace.bottom.is_some() {

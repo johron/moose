@@ -1,10 +1,10 @@
-use ratatui::Frame;
-use ratatui::layout::Rect;
-use crate::panel::global_panel::GlobalPanel;
 use crate::handler::input::InputEvent;
 use crate::panel::command_bar::config::{init_config, CommandBarConfig};
 use crate::panel::command_bar::renderer::render;
+use crate::panel::global_panel::GlobalPanel;
 use crate::panel::panel::{Cursor, Panel};
+use ratatui::layout::Rect;
+use ratatui::Frame;
 
 #[derive(Debug, Eq, Hash, PartialEq)]
 pub struct CommandBar {

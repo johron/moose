@@ -1,6 +1,6 @@
 use crate::panel::editor::editor::{Editor, EditorEdit, EditorEvent};
-use ropey::Rope;
 use crate::panel::panel::Cursor;
+use ropey::Rope;
 
 pub fn handle_event(editor: &mut Editor, event: EditorEvent) {
     match event {

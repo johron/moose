@@ -1,8 +1,8 @@
-use ratatui::Frame;
+use crate::panel::command_bar::command_bar::CommandBar;
 use ratatui::layout::Rect;
 use ratatui::style::Style;
 use ratatui::widgets::{Block, Borders, Paragraph};
-use crate::panel::command_bar::command_bar::CommandBar;
+use ratatui::Frame;
 
 pub fn render(command_bar: &CommandBar, frame: &mut Frame, area: Rect) {
     let block = Block::default()
