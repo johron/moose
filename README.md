@@ -22,7 +22,7 @@
 - [ ] More advanced rendering
   - [ ] Drawing multiple panels in one workspace, layout etc
   - [ ] Command bar, should this be global, or managed per panel? registered commands may only be per panel.
-    - [ ] `shift + q` for å åpne global command bar. Eller så har jeg et kommandoregister der hvert panel kan registrere commands med en callback.
+    - [ ] `shift + q` for å åpne global command bar. Eller så har jeg et kommandoregister der hvert panel kan registrere commands med en callback. Legg til funksjon og Panel trakt: commands som returnerer en Hashmap(cmd: str, callback: func)
 - [ ] Lua plugin system
   - [ ] To start: Syntax highlighting for editor panel. Editor Plugins. Editor panel needs to expose a plugin API?
   - [ ] Later: Custom panels, shortcuts, .., 
