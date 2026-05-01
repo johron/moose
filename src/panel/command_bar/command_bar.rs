@@ -1,8 +1,8 @@
 use ratatui::Frame;
 use ratatui::layout::Rect;
-use serde::{Deserialize, Serialize};
 use crate::panel::global_panel::GlobalPanel;
 use crate::handler::input::InputEvent;
+use crate::panel::command_bar::config::{init_config, CommandBarConfig};
 use crate::panel::command_bar::renderer::render;
 use crate::panel::panel::{Cursor, Panel};
 
@@ -31,7 +31,12 @@ impl CommandBar {
 
 impl Panel for CommandBar {
     fn init(&mut self) {
-        todo!()
+        let config = init_config();
+        if config.is_ok() {
+            self.config = config.unwrap();
+        } else {
+            eprintln!("Could not load editor config {:?}", config.err().unwrap());
+        }
     }
 
     fn is_initialized(&self) -> bool {
@@ -43,7 +48,7 @@ impl Panel for CommandBar {
     }
 
     fn identity(&self) -> &str {
-        "moose:command_bar"
+        "builtin:command_bar"
     }
 
     fn title(&self) -> String {
@@ -74,18 +79,5 @@ impl GlobalPanel for CommandBar {
 
     fn is_floating(&self) -> bool {
         self.floating
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize, Clone, Eq, Hash, PartialEq)]
-pub struct CommandBarConfig {
-
-}
-
-impl Default for CommandBarConfig {
-    fn default() -> CommandBarConfig {
-        CommandBarConfig {
-
-        }
     }
 }

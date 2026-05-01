@@ -49,7 +49,7 @@ impl Panel for Editor {
     }
 
     fn identity(&self) -> &str {
-        "moose:editor"
+        "builtin:editor"
     }
 
     fn title(&self) -> String {

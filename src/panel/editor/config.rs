@@ -3,8 +3,8 @@ use serde::{Deserialize, Serialize};
 use crate::handler::config::{ensure_config_exists, make_config};
 
 pub fn init_config() -> Result<EditorConfig, config::ConfigError> {
-    ensure_config_exists::<EditorConfig>(String::from("editor.toml")).expect("Failed to ensure config file exists");
-    let cfg = make_config(String::from("editor.toml"), true)?;
+    ensure_config_exists::<EditorConfig>(String::from("builtin/editor.toml")).expect("Failed to ensure config file exists");
+    let cfg = make_config(String::from("builtin/editor.toml"), true)?;
 
     let editor: EditorConfig = cfg.try_deserialize()?;
     Ok(editor)
