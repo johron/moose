@@ -1,6 +1,25 @@
-use crate::panel::editor::editor::{Editor, EditorEdit, EditorEvent};
+use crate::panel::editor::editor::{Editor, EditorMode};
 use crate::panel::panel::Cursor;
 use ropey::Rope;
+
+#[derive(Debug)]
+pub enum EditorEdit {
+    Insert(char),
+    Delete,
+    Newline,
+    Tab,
+    Backtab
+}
+
+#[derive(Debug)]
+pub enum EditorEvent {
+    Edit(EditorEdit), // relative
+    CursorMove(usize, usize), // x, y, relative
+    Scroll(usize, usize), // x, y, relative
+    Mode(EditorMode),
+    Quit,
+    None,
+}
 
 pub fn handle_event(editor: &mut Editor, event: EditorEvent) {
     match event {

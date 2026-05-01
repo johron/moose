@@ -65,25 +65,6 @@ impl Panel for Editor {
     }
 }
 
-#[derive(Debug)]
-pub enum EditorEdit {
-    Insert(char),
-    Delete,
-    Newline,
-    Tab,
-    Backtab
-}
-
-#[derive(Debug)]
-pub enum EditorEvent {
-    Edit(EditorEdit), // relative
-    CursorMove(usize, usize), // x, y, relative
-    Scroll(usize, usize), // x, y, relative
-    Mode(EditorMode),
-    Quit,
-    None,
-}
-
 impl Editor {
     pub fn new() -> Self {
         Editor {

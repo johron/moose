@@ -3,14 +3,26 @@ use crate::handler::workspace::workspace::Workspace;
 use crate::panel::global_panel::GlobalPanel;
 use ratatui::layout::Rect;
 use ratatui::Frame;
+use crate::handler::global_workspace::config::{init_config, MooseConfig};
+use crate::handler::global_workspace::input::input;
 use crate::handler::input::InputEvent;
 
 #[derive(Debug)]
 pub struct GlobalWorkspace {
-    pub(crate) bottom: Option<Box<dyn GlobalPanel>>,   // 0
-    pub(crate) left: Option<Box<dyn GlobalPanel>>,     // 1
-    pub(crate) right: Option<Box<dyn GlobalPanel>>,    // 2
-    active: usize, //                          ^
+    pub bottom: Option<Box<dyn GlobalPanel>>,
+    pub left: Option<Box<dyn GlobalPanel>>,
+    pub right: Option<Box<dyn GlobalPanel>>,
+    pub active: GlobalWorkspaceActive,
+    pub config: MooseConfig,
+    pub should_quit: bool,
+}
+
+#[derive(Debug)]
+pub enum GlobalWorkspaceActive {
+    Workspace,
+    Bottom,
+    Left,
+    Right,
 }
 
 impl GlobalWorkspace {
@@ -19,7 +31,18 @@ impl GlobalWorkspace {
             bottom: None,
             left: None,
             right: None,
-            active: 0,
+            active: GlobalWorkspaceActive::Workspace,
+            config: MooseConfig::default(),
+            should_quit: false,
+        }
+    }
+
+    pub fn init(&mut self) {
+        let config = init_config();
+        if config.is_ok() {
+            self.config = config.unwrap();
+        } else {
+            eprintln!("Could not load moose config {:?}", config.err().unwrap());
         }
     }
 
@@ -35,19 +58,19 @@ impl GlobalWorkspace {
         self.right = Some(panel);
     }
 
-    pub fn active(&self) -> Option<&Box<dyn GlobalPanel>> {
+    pub fn get_active_panel(&self) -> Option<&Box<dyn GlobalPanel>> {
         match self.active {
-            0 => if let Some(bottom) = &self.bottom {
+            GlobalWorkspaceActive::Bottom => if let Some(bottom) = &self.bottom {
                 Some(&bottom)
             } else {
                 None
             },
-            1 => if let Some(left) = &self.left {
+            GlobalWorkspaceActive::Left => if let Some(left) = &self.left {
                 Some(&left)
             } else {
                 None
             },
-            2 => if let Some(right) = &self.right {
+            GlobalWorkspaceActive::Right => if let Some(right) = &self.right {
                 Some(&right)
             } else {
                 None
@@ -60,7 +83,7 @@ impl GlobalWorkspace {
         render(self, child_workspace, frame, area);
     }
 
-    pub fn input(&mut self, input_event: InputEvent) {
-        todo!()
+    pub fn input(&mut self, child_workspace: Option<&mut Workspace>, input_event: InputEvent) {
+        input(self, child_workspace, input_event);
     }
 }

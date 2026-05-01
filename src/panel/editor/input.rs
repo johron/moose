@@ -1,6 +1,7 @@
 use crate::handler::config::{char_config, vec_config};
 use crate::handler::input::InputEvent;
-use crate::panel::editor::editor::{Editor, EditorEdit, EditorEvent, EditorMode};
+use crate::panel::editor::editor::{Editor, EditorMode};
+use crate::panel::editor::event::{EditorEdit, EditorEvent};
 
 pub fn handle_input(editor: &Editor, input_event: InputEvent) -> EditorEvent {
     match editor.mode {
