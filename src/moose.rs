@@ -55,7 +55,7 @@ impl Moose {
             eprintln!("Could not load moose config {:?}", config.err().unwrap());
         }
 
-        self.global_workspace.add_panel(Box::new(CommandBar::new()), true);
+        self.global_workspace.set_bottom(Box::new(CommandBar::new()));
     }
 
     fn init_config(&self) -> Result<MooseConfig, config::ConfigError> {

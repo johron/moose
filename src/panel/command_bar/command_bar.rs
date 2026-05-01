@@ -35,7 +35,7 @@ impl Panel for CommandBar {
         if config.is_ok() {
             self.config = config.unwrap();
         } else {
-            eprintln!("Could not load editor config {:?}", config.err().unwrap());
+            eprintln!("Could not load command bar config {:?}", config.err().unwrap());
         }
     }
 

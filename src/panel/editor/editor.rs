@@ -30,7 +30,6 @@ impl Panel for Editor {
         if self.init {
             return;
         }
-        println!("Created a new editor panel {}", self.title());
         let config = init_config();
         if config.is_ok() {
             self.config = config.unwrap();
