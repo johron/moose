@@ -14,6 +14,7 @@ mod handler;
 
 fn main() -> io::Result<()> {
     let mut moose = Moose::new();
+    moose.init();
     moose.add_workspace(true);
 
     if let Some(workspace) = moose.active_workspace() {

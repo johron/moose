@@ -10,20 +10,6 @@ pub fn init_config() -> Result<EditorConfig, config::ConfigError> {
     Ok(editor)
 }
 
-pub fn vec_config(config: String) -> Vec<String> {
-    let mut vec: Vec<String> = config.split('+').map(|s| s.trim().to_lowercase()).collect();
-    vec.sort();
-    vec
-}
-
-pub fn char_config(config: String) -> Option<char> {
-    if config.starts_with("char:") {
-        config.trim_start_matches("char:").chars().next()
-    } else {
-        None
-    }
-}
-
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct EditorConfig {
     pub enter_normal_mode: String,

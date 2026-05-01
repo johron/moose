@@ -48,7 +48,6 @@ impl Cursor {
 pub enum EditorMode {
     Normal,
     Insert,
-    Command,
     // ++
 }
 
@@ -62,7 +61,7 @@ impl Panel for Editor {
         if config.is_ok() {
             self.config = config.unwrap();
         } else {
-            eprintln!("Could not load config.. {:?}", config.err().unwrap());
+            eprintln!("Could not load editor config {:?}", config.err().unwrap());
         }
 
         self.init = true;
@@ -70,6 +69,9 @@ impl Panel for Editor {
 
     fn is_initialized(&self) -> bool {
         self.init
+    }
+    fn is_normal_mode(&self) -> bool {
+        matches!(self.mode, EditorMode::Normal)
     }
 
     fn identity(&self) -> &str {

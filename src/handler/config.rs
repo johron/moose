@@ -39,3 +39,17 @@ pub fn make_config(file_name: String, required: bool) -> Result<Config, config::
         .add_source(config::File::from(path).required(required))
         .build()
 }
+
+pub fn vec_config(config: String) -> Vec<String> {
+    let mut vec: Vec<String> = config.split('+').map(|s| s.trim().to_lowercase()).collect();
+    vec.sort();
+    vec
+}
+
+pub fn char_config(config: String) -> Option<char> {
+    if config.starts_with("char:") {
+        config.trim_start_matches("char:").chars().next()
+    } else {
+        None
+    }
+}
