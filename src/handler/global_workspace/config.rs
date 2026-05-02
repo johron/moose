@@ -3,13 +3,13 @@ use crate::handler::config::{ensure_config_exists, make_config};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct MooseConfig {
-    pub enter_command_mode: String,
+    pub enter_global_command_mode: String,
 }
 
 impl Default for MooseConfig {
     fn default() -> Self {
         MooseConfig {
-            enter_command_mode: String::from("q"),
+            enter_global_command_mode: String::from("q"),
         }
     }
 }

@@ -2,15 +2,17 @@ use crate::handler::input::InputEvent;
 use ratatui::layout::Rect;
 use ratatui::Frame;
 use std::fmt::Debug;
+use crate::panel::global_panel::GlobalPanelMeta;
 
 pub trait Panel: Debug {
     fn init(&mut self);
     fn is_initialized(&self) -> bool;
-    fn is_normal_mode(&self) -> bool;
+    fn is_normal_mode(&self) -> bool { true }
     fn identity(&self) -> &str;
     fn title(&self) -> String;
     fn render(&self, frame: &mut Frame, area: Rect);
     fn input(&mut self, input: InputEvent);
+    fn get_global_panels(&mut self) -> Option<Vec<GlobalPanelMeta>> { None }
 }
 
 #[derive(Debug, Clone, Eq, Hash, PartialEq)]

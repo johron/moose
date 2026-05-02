@@ -7,6 +7,9 @@ use crate::panel::panel::{Cursor, Panel};
 use ratatui::layout::Rect;
 use ratatui::Frame;
 use ropey::Rope;
+use crate::handler::global_workspace::global_workspace::GlobalWorkspaceActive;
+use crate::panel::command_bar::command_bar::CommandBar;
+use crate::panel::global_panel::GlobalPanelMeta;
 
 #[derive(Debug)]
 pub struct Editor {
@@ -62,6 +65,18 @@ impl Panel for Editor {
     fn input(&mut self, input: InputEvent) {
         let event = handle_input(self, input);
         handle_event(self, event);
+    }
+
+    fn get_global_panels(&mut self) -> Option<Vec<GlobalPanelMeta>> {
+        let mut vec: Vec<GlobalPanelMeta> = Vec::new();
+
+        vec.push(GlobalPanelMeta {
+            panel: Box::new(CommandBar::new()),
+            toggle_show_shortcut: self.config.enter_command_mode.clone(),
+            location: GlobalWorkspaceActive::Bottom,
+        });
+
+        Some(vec)
     }
 }
 

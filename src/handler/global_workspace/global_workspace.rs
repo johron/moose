@@ -4,8 +4,6 @@ use crate::panel::global_panel::GlobalPanel;
 use ratatui::layout::Rect;
 use ratatui::Frame;
 use crate::handler::global_workspace::config::{init_config, MooseConfig};
-use crate::handler::global_workspace::input::input;
-use crate::handler::input::InputEvent;
 
 #[derive(Debug)]
 pub struct GlobalWorkspace {
@@ -81,9 +79,5 @@ impl GlobalWorkspace {
 
     pub fn render(&self, child_workspace: Option<&Workspace>, frame: &mut Frame, area: Rect) {
         render(self, child_workspace, frame, area);
-    }
-
-    pub fn input(&mut self, child_workspace: Option<&mut Workspace>, input_event: InputEvent) {
-        input(self, child_workspace, input_event);
     }
 }

@@ -12,6 +12,7 @@ pub fn init_config() -> Result<CommandBarConfig, config::ConfigError> {
 #[derive(Debug, Deserialize, Serialize, Clone, Eq, Hash, PartialEq)]
 pub struct CommandBarConfig {
     pub execute_command: String,
+    pub delete_char: String,
     pub cursor_left: String,
     pub cursor_right: String,
 }
@@ -20,6 +21,7 @@ impl Default for CommandBarConfig {
     fn default() -> CommandBarConfig {
         CommandBarConfig {
             execute_command: String::from("enter"),
+            delete_char: String::from("backspace"),
             cursor_left: String::from("left"),
             cursor_right: String::from("right"),
         }

@@ -7,7 +7,8 @@ use ratatui::Frame;
 pub fn render(command_bar: &CommandBar, frame: &mut Frame, area: Rect) {
     let block = Block::default()
         .style(Style::default())
-        .borders(Borders::TOP);
+        .borders(Borders::TOP)
+        .title("COMMAND");
 
     let paragraph = Paragraph::new(format!("q:{}", command_bar.cmd.as_str()))
         .block(block)

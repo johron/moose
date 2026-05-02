@@ -21,7 +21,6 @@ impl Moose {
 
     pub fn init(&mut self) {
         self.global_workspace.init();
-        self.global_workspace.set_bottom(Box::new(CommandBar::new()));
     }
 
     pub fn add_workspace(&mut self, make_active: bool) {

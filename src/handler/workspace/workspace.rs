@@ -9,7 +9,7 @@ pub struct Workspace {
     direction: Direction,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Direction {
     Horizontal,
     Vertical,
