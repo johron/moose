@@ -43,16 +43,19 @@ impl GlobalWorkspace {
             eprintln!("Could not load moose config {:?}", config.err().unwrap());
         }
     }
-
-    pub fn set_bottom(&mut self, panel: Box<dyn GlobalPanel>) {
+    
+    pub fn set_bottom(&mut self, mut panel: Box<dyn GlobalPanel>) {
+        panel.init();
         self.bottom = Some(panel);
     }
 
-    pub fn set_left(&mut self, panel: Box<dyn GlobalPanel>) {
+    pub fn set_left(&mut self, mut panel: Box<dyn GlobalPanel>) {
+        panel.init();
         self.left = Some(panel);
     }
 
-    pub fn set_right(&mut self, panel: Box<dyn GlobalPanel>) {
+    pub fn set_right(&mut self, mut panel: Box<dyn GlobalPanel>) {
+        panel.init();
         self.right = Some(panel);
     }
 
@@ -79,5 +82,24 @@ impl GlobalWorkspace {
 
     pub fn render(&self, child_workspace: Option<&Workspace>, frame: &mut Frame, area: Rect) {
         render(self, child_workspace, frame, area);
+    }
+    
+    pub fn tick(&mut self) {
+        if let Some(bottom) = self.bottom.as_mut() {
+            if bottom.should_quit() {
+                self.bottom = None;
+                self.active = GlobalWorkspaceActive::Workspace;
+            }
+        } else if let Some(left) = self.left.as_mut() {
+            if left.should_quit() {
+                self.left = None;
+                self.active = GlobalWorkspaceActive::Workspace;
+            }
+        } else if let Some(right) = self.right.as_mut() {
+            if right.should_quit() {
+                self.right = None;
+                self.active = GlobalWorkspaceActive::Workspace;
+            }
+        }
     }
 }

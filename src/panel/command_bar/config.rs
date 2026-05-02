@@ -11,6 +11,13 @@ pub fn init_config() -> Result<CommandBarConfig, config::ConfigError> {
 
 #[derive(Debug, Deserialize, Serialize, Clone, Eq, Hash, PartialEq)]
 pub struct CommandBarConfig {
+    pub start_in_insert_mode: bool,
+    pub enter_normal_mode_after_exec: bool,
+    
+    pub quit_command_bar: String,
+    pub enter_insert_mode: String,
+    pub enter_normal_mode: String,
+    
     pub execute_command: String,
     pub delete_char: String,
     pub cursor_left: String,
@@ -20,6 +27,13 @@ pub struct CommandBarConfig {
 impl Default for CommandBarConfig {
     fn default() -> CommandBarConfig {
         CommandBarConfig {
+            start_in_insert_mode: true,
+            enter_normal_mode_after_exec: true,
+            
+            quit_command_bar: String::from("char:q"),
+            enter_insert_mode: String::from("char:i"),
+            enter_normal_mode: String::from("esc"),
+            
             execute_command: String::from("enter"),
             delete_char: String::from("backspace"),
             cursor_left: String::from("left"),

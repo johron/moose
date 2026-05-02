@@ -1,3 +1,4 @@
+use std::any::Any;
 use crate::handler::input::InputEvent;
 use ratatui::layout::Rect;
 use ratatui::Frame;
@@ -12,6 +13,7 @@ pub trait Panel: Debug {
     fn title(&self) -> String;
     fn render(&self, frame: &mut Frame, area: Rect);
     fn input(&mut self, input: InputEvent);
+    fn should_quit(&self) -> bool;
     fn get_global_panels(&mut self) -> Option<Vec<GlobalPanelMeta>> { None }
 }
 

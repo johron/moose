@@ -71,6 +71,8 @@ fn run(terminal: &mut Terminal<CrosstermBackend<StdoutLock>>, mut moose: Moose) 
             let ev = crossterm::event::read()?;
             moose.handle_terminal_event(ev);
         }
+        
+        moose.global_workspace.tick();
 
         terminal.draw(|frame| {
             let area = frame.area();

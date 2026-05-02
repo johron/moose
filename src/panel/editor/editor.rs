@@ -1,3 +1,4 @@
+use std::any::Any;
 use crate::handler::input::InputEvent;
 use crate::panel::editor::config::{init_config, EditorConfig};
 use crate::panel::editor::event::handle_event;
@@ -19,6 +20,7 @@ pub struct Editor {
     pub cursors: Vec<Cursor>,
     pub mode: EditorMode,
     pub config: EditorConfig,
+    should_quit: bool,
 }
 
 #[derive(Debug)]
@@ -67,14 +69,23 @@ impl Panel for Editor {
         handle_event(self, event);
     }
 
+    fn should_quit(&self) -> bool {
+        self.should_quit
+    }
+
     fn get_global_panels(&mut self) -> Option<Vec<GlobalPanelMeta>> {
         let mut vec: Vec<GlobalPanelMeta> = Vec::new();
+        let config = self.config.clone();
 
-        vec.push(GlobalPanelMeta {
+        let command_bar = GlobalPanelMeta {
             panel: Box::new(CommandBar::new()),
-            toggle_show_shortcut: self.config.enter_command_mode.clone(),
+            toggle_show_shortcut: config.enter_command_mode.clone(),
             location: GlobalWorkspaceActive::Bottom,
-        });
+        };
+
+        self.command_bar = Some((*command_bar.panel).as_any().downcast_mut::<CommandBar>().unwrap());
+
+        vec.push(command_bar);
 
         Some(vec)
     }
@@ -89,6 +100,11 @@ impl Editor {
             cursors: vec![Cursor::new()],
             mode: EditorMode::Normal,
             config: EditorConfig::default(),
+            should_quit: false,
         }
+    }
+    
+    fn handle_command(&mut self) {
+
     }
 }

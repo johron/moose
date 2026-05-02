@@ -17,6 +17,7 @@ pub enum EditorEvent {
     CursorMove(usize, usize), // x, y, relative
     Scroll(usize, usize), // x, y, relative
     Mode(EditorMode),
+    Command(String, Vec<String>),
     Quit,
     None,
 }
