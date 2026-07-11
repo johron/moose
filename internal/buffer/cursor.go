@@ -1,8 +1,8 @@
 package buffer
 
 import (
-	"os"
-	"fmt"
+	"slices"
+	"cmp"
 )
 
 type Cursor struct {
@@ -20,6 +20,24 @@ func (cm *CursorManager) AddCursor(cur Cursor) {
 }
 
 func (cm *CursorManager) DeduplicateAndSort() {
-    fmt.Printf("moose: todo: implement DeduplicateAndSort()")
-	os.Exit(1)
+	if len(cm.Cursors) <= 1 {
+		return
+	}
+
+	primaryCursor := cm.Cursors[cm.PrimaryIdx]
+
+	slices.SortFunc(cm.Cursors, func(a, b Cursor) int {
+		return cmp.Compare(a.Offset, b.Offset)
+	})
+
+	cm.Cursors = slices.CompactFunc(cm.Cursors, func(a, b Cursor) bool {
+		return a.Offset == b.Offset
+	})
+
+	for i, cur := range cm.Cursors {
+		if cur == primaryCursor {
+			cm.PrimaryIdx = i
+			break
+		}
+	}
 }

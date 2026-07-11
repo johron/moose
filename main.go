@@ -11,7 +11,7 @@ import (
 func main() {
     model := tui.NewEditorModel()
 
-    p := tea.NewProgram(model, tea.WithAltScreen())
+    p := tea.NewProgram(model)
     if _, err := p.Run(); err != nil {
         fmt.Printf("moose: error: %v", err)
         os.Exit(1)

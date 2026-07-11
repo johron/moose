@@ -1,7 +1,9 @@
 package tui
 
 import (
+    "github.com/gboncoffee/gopiecetable"
     tea "charm.land/bubbletea/v2"
+    "charm.land/bubbles/v2/key"
 )
 
 func (m EditorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -9,18 +11,39 @@ func (m EditorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     case tea.WindowSizeMsg:
         m.Width = msg.Width
         m.Height = msg.Height
-        m.Viewport.Width = msg.Width
-        m.Viewport.Height = msg.Height - 2 // Space for footer status bar
+        m.Viewport.SetWidth(msg.Width)
+
+        h := msg.Height - 2
+        if h < 0 {
+            h = 0
+        }
+        m.Viewport.SetHeight(h)
         return m, nil
 
-    case tea.KeyMsg:
-        switch msg.String() {
-        case "ctrl+c":
+    case tea.KeyPressMsg:
+        switch {
+        case key.Matches(msg, m.Keymap.quit):
             return m, tea.Quit
+        case key.Matches(msg, m.Keymap.newline):
+            m.Buffer.Insert('\n')
+        case key.Matches(msg, m.Keymap.delete):
+            m.Buffer.Delete()
+        case key.Matches(msg, m.Keymap.undo):
+            m.Buffer.Undo()
+        case key.Matches(msg, m.Keymap.redo):
+            m.Buffer.Table.Redo()
         default:
-            m.Document.Table.Insert(msg.String(), m.Document.Table.Size())
-            m.Viewport.SetContent(m.RenderBufferToString())
+            key := msg.Key()
+            if key.Text != "" {
+                for _, r := range key.Text {
+                    //_ = m.Buffer.Table.Insert(m.Buffer.Table.Size(), r)
+                    m.Buffer.Insert(r)
+                }
+            }
         }
+
+        m.Viewport.SetContent(gopiecetable.String(m.Buffer.Table))
     }
+
     return m, nil
 }
