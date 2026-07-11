@@ -7,6 +7,7 @@ import (
 
 type Cursor struct {
     Offset int
+	Goal int
 }
 
 type CursorManager struct {
