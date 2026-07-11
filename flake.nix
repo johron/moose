@@ -20,7 +20,6 @@
         ];
 
         shellHook = ''
-          echo "Go Development Environment Loaded!"
           export GOPATH="$PWD/.nix-go"
         '';
       };
