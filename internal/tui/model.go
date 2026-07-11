@@ -30,6 +30,7 @@ func NewEditorModel() EditorModel {
 	}
 
 	vp := viewport.New()
+	vp.MouseWheelEnabled = false
 
 	model := EditorModel{
 		Buffer:   initialBuf,
@@ -85,6 +86,7 @@ func (m EditorModel) Init() tea.Cmd {
 func (m EditorModel) View() tea.View {
 	v := tea.NewView(m.Viewport.View())
 	v.AltScreen = true
+	v.MouseMode = tea.MouseModeCellMotion
 	return v
 }
 

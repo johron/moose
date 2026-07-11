@@ -18,7 +18,8 @@ func (m EditorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.Viewport.SetHeight(h)
 		return m, nil
-
+	case tea.MouseWheelMsg:
+		return m, nil
 	case tea.KeyPressMsg:
 		switch {
 		case key.Matches(msg, m.Keymap.quit):
@@ -29,14 +30,14 @@ func (m EditorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Buffer.MoveHoriz(1)
 		case key.Matches(msg, m.Keymap.down):
 			m.Buffer.MoveVert(1)
+		case key.Matches(msg, m.Keymap.up):
+			m.Buffer.MoveVert(-1)
 		case key.Matches(msg, m.Keymap.cursorUp):
 			m.Buffer.AddCursorVert(-1)
 		case key.Matches(msg, m.Keymap.cursorDown):
 			m.Buffer.AddCursorVert(1)
 		case key.Matches(msg, m.Keymap.clearCursors):
 			m.Buffer.ClearCursors()
-		case key.Matches(msg, m.Keymap.up):
-			m.Buffer.MoveVert(-1)
 		case key.Matches(msg, m.Keymap.newline):
 			m.Buffer.Insert('\n')
 		case key.Matches(msg, m.Keymap.delete):
