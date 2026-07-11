@@ -23,14 +23,20 @@ func (m EditorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch {
 		case key.Matches(msg, m.Keymap.quit):
 			return m, tea.Quit
-        case key.Matches(msg, m.Keymap.left):
-            m.Buffer.MoveHoriz(-1)
-        case key.Matches(msg, m.Keymap.right):
-            m.Buffer.MoveHoriz(1)
-        case key.Matches(msg, m.Keymap.down):
-            m.Buffer.MoveVert(1)
-        case key.Matches(msg, m.Keymap.up):
-            m.Buffer.MoveVert(-1)
+		case key.Matches(msg, m.Keymap.left):
+			m.Buffer.MoveHoriz(-1)
+		case key.Matches(msg, m.Keymap.right):
+			m.Buffer.MoveHoriz(1)
+		case key.Matches(msg, m.Keymap.down):
+			m.Buffer.MoveVert(1)
+		case key.Matches(msg, m.Keymap.cursorUp):
+			m.Buffer.AddCursorVert(-1)
+		case key.Matches(msg, m.Keymap.cursorDown):
+			m.Buffer.AddCursorVert(1)
+		case key.Matches(msg, m.Keymap.clearCursors):
+			m.Buffer.ClearCursors()
+		case key.Matches(msg, m.Keymap.up):
+			m.Buffer.MoveVert(-1)
 		case key.Matches(msg, m.Keymap.newline):
 			m.Buffer.Insert('\n')
 		case key.Matches(msg, m.Keymap.delete):
@@ -44,8 +50,8 @@ func (m EditorModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-		m.Viewport.SetContent(m.Buffer.String())
-        
+		m.Viewport.SetContent(m.renderedContent())
+		return m, nil
 	}
 
 	return m, nil

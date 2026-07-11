@@ -9,7 +9,7 @@ import (
 )
 
 type Keymap = struct {
-	left, right, up, down, tab, backtab, newline, delete, quit key.Binding
+	left, right, up, down, cursorUp, cursorDown, clearCursors, tab, backtab, newline, delete, quit key.Binding
 }
 
 type EditorModel struct {
@@ -24,15 +24,14 @@ func NewEditorModel() EditorModel {
 	initialBuf := buffer.Buffer{
 		Rope: nil,
 		CM: buffer.CursorManager{
-			Cursors: []buffer.Cursor{{Offset: 0}},
+			Cursors: []buffer.Cursor{{Offset: 0, Goal: 0}},
 			PrimaryIdx: 0,
 		},
 	}
 
 	vp := viewport.New()
-	vp.SetContent(initialBuf.String())
 
-	return EditorModel{
+	model := EditorModel{
 		Buffer:   initialBuf,
 		Viewport: vp,
 		Keymap: Keymap{
@@ -47,6 +46,15 @@ func NewEditorModel() EditorModel {
 			),
 			down: key.NewBinding(
 				key.WithKeys("down"),
+			),
+			cursorUp: key.NewBinding(
+				key.WithKeys("shift+up"),
+			),
+			cursorDown: key.NewBinding(
+				key.WithKeys("shift+down"),
+			),
+			clearCursors: key.NewBinding(
+				key.WithKeys("esc"),
 			),
 			tab: key.NewBinding(
 				key.WithKeys("tab"),
@@ -65,6 +73,9 @@ func NewEditorModel() EditorModel {
 			),
 		},
 	}
+
+	model.Viewport.SetContent(model.renderedContent())
+	return model
 }
 
 func (m EditorModel) Init() tea.Cmd {
@@ -75,4 +86,40 @@ func (m EditorModel) View() tea.View {
 	v := tea.NewView(m.Viewport.View())
 	v.AltScreen = true
 	return v
+}
+
+func (m EditorModel) renderedContent() string {
+    content := []rune(m.Buffer.String())
+
+    cursorMap := make(map[int]bool)
+    for _, cur := range m.Buffer.CM.Cursors {
+        offset := cur.Offset
+        if offset < 0 {
+            offset = 0
+        }
+        if offset > len(content) {
+            offset = len(content)
+        }
+        cursorMap[offset] = true
+    }
+
+	out := make([]rune, 0, len(content)+len(cursorMap))
+
+    for i, r := range content {
+        if cursorMap[i] {
+            out = append(out, '█')
+            
+            if r == '\n' {
+                out = append(out, r)
+            }
+        } else {
+            out = append(out, r)
+        }
+    }
+
+    if cursorMap[len(content)] {
+        out = append(out, '█')
+    }
+
+    return string(out)
 }
