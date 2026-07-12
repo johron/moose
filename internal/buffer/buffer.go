@@ -40,6 +40,8 @@ func (buf *Buffer) Insert(content rune) {
 
 		buf.Rope.Insert(pos, data)
 		cur.Offset = pos + shift
+		_, goal := LineCol(buf.Rope, cur.Offset)
+		cur.Goal = goal
 
 		delta += shift
 	}
@@ -83,6 +85,8 @@ func (buf *Buffer) Delete() {
 		delta -= deleted
 
 		cur.Offset = start
+		_, goal := LineCol(buf.Rope, cur.Offset)
+		cur.Goal = goal
 	}
 
 	buf.CM.DeduplicateAndSort()
@@ -93,11 +97,12 @@ func (buf *Buffer) MoveHoriz(dir int) {
 
 	for i := range buf.CM.Cursors {
 		cur := &buf.CM.Cursors[i]
-		if cur.Offset+dir < 0 || cur.Offset+dir > buf.Rope.Len() {
-			continue
+		switch {
+		case dir < 0:
+			cur.Offset = prevRuneStart(buf.Rope, cur.Offset)
+		case dir > 0:
+			cur.Offset = nextRuneEnd(buf.Rope, cur.Offset)
 		}
-
-		cur.Offset += dir
 		_, goal := LineCol(buf.Rope, cur.Offset)
 		cur.Goal = goal
 	}
@@ -118,18 +123,15 @@ func (buf *Buffer) MoveVert(dir int) {
 		}
 
 		lineStart := OffsetForLine(buf.Rope, targetLine)
-		lineEnd := OffsetForLine(buf.Rope, targetLine+1)
-		lineLen := lineEnd - lineStart
-		if lineLen < 0 {
-			lineLen = 0
-		}
+		lineEnd := lineContentEnd(buf.Rope, targetLine)
+		lineLen := runeCount(buf.Rope, lineStart, lineEnd)
 
 		goal := cur.Goal
 		if goal > lineLen {
 			goal = lineLen
 		}
 
-		cur.Offset = lineStart + goal
+		cur.Offset = OffsetForLineCol(buf.Rope, targetLine, goal)
 	}
 
 	buf.CM.DeduplicateAndSort()
@@ -151,11 +153,8 @@ func (buf *Buffer) AddCursorVert(dir int) {
 		}
 
 		lineStart := OffsetForLine(buf.Rope, targetLine)
-		lineEnd := OffsetForLine(buf.Rope, targetLine+1)
-		lineLen := lineEnd - lineStart
-		if lineLen < 0 {
-			lineLen = 0
-		}
+		lineEnd := lineContentEnd(buf.Rope, targetLine)
+		lineLen := runeCount(buf.Rope, lineStart, lineEnd)
 
 		goal := cur.Goal
 		if goal > lineLen {
@@ -163,7 +162,7 @@ func (buf *Buffer) AddCursorVert(dir int) {
 		}
 
 		newCursors = append(newCursors, Cursor{
-			Offset: lineStart + goal,
+			Offset: OffsetForLineCol(buf.Rope, targetLine, goal),
 			Goal:   goal,
 		})
 	}
@@ -189,6 +188,8 @@ func LineCount(r *rope.Node) int {
 }
 
 func LineCol(r *rope.Node, offset int) (line, col int) {
+	offset = normalizeOffset(r, offset)
+
 	if offset < 0 {
 		offset = 0
 	}
@@ -206,7 +207,7 @@ func LineCol(r *rope.Node, offset int) (line, col int) {
 		}
 	}
 
-	col = offset - lineStart
+	col = runeCount(r, lineStart, offset)
 	return
 }
 
@@ -226,6 +227,106 @@ func OffsetForLine(r *rope.Node, targetLine int) int {
 	}
 
 	return r.Len()
+}
+
+func OffsetForLineCol(r *rope.Node, line int, col int) int {
+	if col <= 0 {
+		return OffsetForLine(r, line)
+	}
+
+	start := OffsetForLine(r, line)
+	end := lineContentEnd(r, line)
+
+	i := start
+	for n := 0; i < end && n < col; n++ {
+		_, size := utf8.DecodeRune(r.Slice(i, end))
+		if size <= 0 {
+			size = 1
+		}
+		i += size
+	}
+
+	if i > end {
+		return end
+	}
+
+	return i
+}
+
+func lineContentEnd(r *rope.Node, line int) int {
+	nextStart := OffsetForLine(r, line+1)
+	if nextStart > 0 && nextStart <= r.Len() && r.At(nextStart-1) == '\n' {
+		return nextStart - 1
+	}
+	return nextStart
+}
+
+func runeCount(r *rope.Node, start, end int) int {
+	if start < 0 {
+		start = 0
+	}
+	if end < start {
+		end = start
+	}
+	if end > r.Len() {
+		end = r.Len()
+	}
+
+	return utf8.RuneCount(r.Slice(start, end))
+}
+
+func normalizeOffset(r *rope.Node, offset int) int {
+	if offset < 0 {
+		return 0
+	}
+	if offset > r.Len() {
+		return r.Len()
+	}
+
+	for offset > 0 && offset < r.Len() && !utf8.RuneStart(r.At(offset)) {
+		offset--
+	}
+
+	return offset
+}
+
+func prevRuneStart(r *rope.Node, offset int) int {
+	offset = normalizeOffset(r, offset)
+	if offset <= 0 {
+		return 0
+	}
+
+	left := r.Slice(0, offset)
+	_, size := utf8.DecodeLastRune(left)
+	if size <= 0 {
+		size = 1
+	}
+
+	start := offset - size
+	if start < 0 {
+		start = 0
+	}
+
+	return start
+}
+
+func nextRuneEnd(r *rope.Node, offset int) int {
+	offset = normalizeOffset(r, offset)
+	if offset >= r.Len() {
+		return r.Len()
+	}
+
+	_, size := utf8.DecodeRune(r.Slice(offset, r.Len()))
+	if size <= 0 {
+		size = 1
+	}
+
+	end := offset + size
+	if end > r.Len() {
+		end = r.Len()
+	}
+
+	return end
 }
 
 func (buf Buffer) String() string {

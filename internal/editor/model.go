@@ -2,6 +2,8 @@ package editor
 
 import (
 	"moose/internal/buffer"
+	"strings"
+	"unicode/utf8"
 
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
@@ -50,7 +52,7 @@ func (m Model) View() tea.View {
 }
 
 func (m Model) renderedContent() string {
-	content := []rune(m.Buffer.String())
+	content := []byte(m.Buffer.String())
 
 	cursorMap := make(map[int]bool)
 	for _, cur := range m.Buffer.CM.Cursors {
@@ -64,23 +66,39 @@ func (m Model) renderedContent() string {
 		cursorMap[offset] = true
 	}
 
-	out := make([]rune, 0, len(content)+len(cursorMap))
+	var out strings.Builder
+	out.Grow(len(content) + len(cursorMap))
 
-	for i, r := range content {
-		if cursorMap[i] {
-			out = append(out, '█')
-
-			if r == '\n' {
-				out = append(out, r)
+	for i := 0; i < len(content); {
+		r, size := utf8.DecodeRune(content[i:])
+		if r == utf8.RuneError && size == 1 {
+			if cursorMap[i] {
+				out.WriteRune('█')
+				i++
+				continue
 			}
-		} else {
-			out = append(out, r)
+
+			out.WriteByte(content[i])
+			i++
+			continue
 		}
+
+		if cursorMap[i] {
+			out.WriteRune('█')
+			if r == '\n' {
+				out.WriteRune('\n')
+			}
+			i += size
+			continue
+		}
+
+		out.WriteRune(r)
+		i += size
 	}
 
 	if cursorMap[len(content)] {
-		out = append(out, '█')
+		out.WriteRune('█')
 	}
 
-	return string(out)
+	return out.String()
 }
