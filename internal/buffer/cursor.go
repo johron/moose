@@ -1,23 +1,23 @@
 package buffer
 
 import (
-	"slices"
 	"cmp"
+	"slices"
 )
 
 type Cursor struct {
-    Offset int
-	Goal int
+	Offset int
+	Goal   int
 }
 
 type CursorManager struct {
-	Cursors []Cursor
+	Cursors    []Cursor
 	PrimaryIdx int
 }
 
 func (cm *CursorManager) AddCursor(cur Cursor) {
-    cm.Cursors = append(cm.Cursors, cur)
-    cm.DeduplicateAndSort()
+	cm.Cursors = append(cm.Cursors, cur)
+	cm.DeduplicateAndSort()
 }
 
 func (cm *CursorManager) DeduplicateAndSort() {

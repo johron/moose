@@ -1,15 +1,15 @@
 package buffer
 
 import (
-	"unicode/utf8"
 	"slices"
+	"unicode/utf8"
 
 	"github.com/zyedidia/rope"
 )
 
 type Buffer struct {
 	Rope *rope.Node
-	CM CursorManager
+	CM   CursorManager
 }
 
 func (buf *Buffer) ensureRope() {
@@ -93,7 +93,7 @@ func (buf *Buffer) MoveHoriz(dir int) {
 
 	for i := range buf.CM.Cursors {
 		cur := &buf.CM.Cursors[i]
-		if cur.Offset + dir < 0 || cur.Offset + dir > buf.Rope.Len() {
+		if cur.Offset+dir < 0 || cur.Offset+dir > buf.Rope.Len() {
 			continue
 		}
 
@@ -138,7 +138,7 @@ func (buf *Buffer) MoveVert(dir int) {
 func (buf *Buffer) AddCursorVert(dir int) {
 	buf.ensureRope()
 
-	var newCursors []Cursor 
+	var newCursors []Cursor
 
 	for i := range buf.CM.Cursors {
 		cur := &buf.CM.Cursors[i]
@@ -164,7 +164,7 @@ func (buf *Buffer) AddCursorVert(dir int) {
 
 		newCursors = append(newCursors, Cursor{
 			Offset: lineStart + goal,
-			Goal: goal,
+			Goal:   goal,
 		})
 	}
 
@@ -176,7 +176,7 @@ func (buf *Buffer) AddCursorVert(dir int) {
 func (buf *Buffer) ClearCursors() {
 	primaryCursor := &Cursor{
 		Offset: buf.CM.Cursors[buf.CM.PrimaryIdx].Offset,
-		Goal: buf.CM.Cursors[buf.CM.PrimaryIdx].Goal,
+		Goal:   buf.CM.Cursors[buf.CM.PrimaryIdx].Goal,
 	}
 
 	buf.CM.Cursors = buf.CM.Cursors[:0]
@@ -189,43 +189,43 @@ func LineCount(r *rope.Node) int {
 }
 
 func LineCol(r *rope.Node, offset int) (line, col int) {
-    if offset < 0 {
-        offset = 0
-    }
-    if offset > r.Len() {
-        offset = r.Len()
-    }
+	if offset < 0 {
+		offset = 0
+	}
+	if offset > r.Len() {
+		offset = r.Len()
+	}
 
-    line = r.Count(0, offset, []byte{'\n'})
+	line = r.Count(0, offset, []byte{'\n'})
 
-    lineStart := 0
-    for i := offset - 1; i >= 0; i-- {
-        if r.At(i) == '\n' {
-            lineStart = i + 1
-            break
-        }
-    }
+	lineStart := 0
+	for i := offset - 1; i >= 0; i-- {
+		if r.At(i) == '\n' {
+			lineStart = i + 1
+			break
+		}
+	}
 
-    col = offset - lineStart
-    return
+	col = offset - lineStart
+	return
 }
 
 func OffsetForLine(r *rope.Node, targetLine int) int {
-    if targetLine <= 0 {
-        return 0
-    }
+	if targetLine <= 0 {
+		return 0
+	}
 
-    line := 0
-    for i := 0; i < r.Len(); i++ {
-        if r.At(i) == '\n' {
-            line++
-            if line == targetLine {
-                return i + 1
-            }
-        }
-    }
+	line := 0
+	for i := 0; i < r.Len(); i++ {
+		if r.At(i) == '\n' {
+			line++
+			if line == targetLine {
+				return i + 1
+			}
+		}
+	}
 
-    return r.Len()
+	return r.Len()
 }
 
 func (buf Buffer) String() string {
