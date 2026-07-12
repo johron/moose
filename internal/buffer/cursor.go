@@ -15,11 +15,6 @@ type CursorManager struct {
 	PrimaryIdx int
 }
 
-func (cm *CursorManager) AddCursor(cur Cursor) {
-	cm.Cursors = append(cm.Cursors, cur)
-	cm.DeduplicateAndSort()
-}
-
 func (cm *CursorManager) DeduplicateAndSort() {
 	if len(cm.Cursors) <= 1 {
 		return

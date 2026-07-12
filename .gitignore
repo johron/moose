@@ -1,3 +1,4 @@
 .direnv
 .nix-go
 build
+.vscode

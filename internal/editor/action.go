@@ -9,7 +9,7 @@ type Action = struct {
 	Binding  key.Binding
 	Command  string
 	HasArgs  bool
-	Callback func(Model, []string) tea.Cmd
+	Callback func(*Model, []string) tea.Cmd
 }
 
 //type Actionmap = struct {
@@ -24,7 +24,7 @@ func DefaultActions() []Action {
 			),
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) tea.Cmd {
 				m.Buffer.MoveHoriz(-1)	
 				return nil
 			},
@@ -35,7 +35,7 @@ func DefaultActions() []Action {
 			),
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) tea.Cmd {
 				m.Buffer.MoveHoriz(1)
 				return nil
 			},
@@ -46,7 +46,7 @@ func DefaultActions() []Action {
 			),
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) tea.Cmd {
 				m.Buffer.MoveVert(-1)
 				return nil
 			},
@@ -57,8 +57,8 @@ func DefaultActions() []Action {
 			),
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m Model, args []string) tea.Cmd {
-				m.Buffer.MoveVert(-1)
+			Callback: func(m *Model, args []string) tea.Cmd {
+				m.Buffer.MoveVert(1)
 				return nil
 			},
 		},
@@ -68,7 +68,7 @@ func DefaultActions() []Action {
 			),
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) tea.Cmd {
 				m.Buffer.AddCursorVert(-1)
 				return nil
 			},
@@ -79,7 +79,7 @@ func DefaultActions() []Action {
 			),
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) tea.Cmd {
 				m.Buffer.AddCursorVert(1)
 				return nil
 			},
@@ -90,7 +90,7 @@ func DefaultActions() []Action {
 			),
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) tea.Cmd {
 				m.Buffer.ClearCursors()
 				return nil
 			},
@@ -101,7 +101,7 @@ func DefaultActions() []Action {
 			),
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) tea.Cmd {
 				//TODO: implement m.Buffer.
 				return nil
 			},
@@ -112,7 +112,7 @@ func DefaultActions() []Action {
 			),
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) tea.Cmd {
 				// TODO: implement m.Buffer.
 				return nil
 			},
@@ -123,7 +123,7 @@ func DefaultActions() []Action {
 			),
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) tea.Cmd {
 				m.Buffer.Delete()
 				return nil
 			},
@@ -134,7 +134,7 @@ func DefaultActions() []Action {
 			),
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) tea.Cmd {
 				m.Buffer.Insert('\n')
 				return nil
 			},
@@ -145,7 +145,7 @@ func DefaultActions() []Action {
 			),
 			Command: "q",
 			HasArgs: false,
-			Callback: func(m Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) tea.Cmd {
 				return tea.Quit
 			},
 		},

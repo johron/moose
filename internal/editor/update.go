@@ -1,6 +1,7 @@
 package editor
 
 import (
+	//"fmt"
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 )
@@ -21,30 +22,22 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.MouseWheelMsg:
 		return m, nil
 	case tea.KeyPressMsg:
-		found := false
-
 		for i := range m.Actions {
 			action := m.Actions[i]
 
 			if key.Matches(msg, action.Binding) {
-				found = true
-				cmd := action.Callback(m, []string{})
+				//fmt.Println(msg, action.Binding)
+				cmd := action.Callback(&m, []string{})
 
-				if cmd != nil {
-					m.Viewport.SetContent(m.renderedContent())
-					return m, cmd
-				}
-
-				break
+				m.Viewport.SetContent(m.renderedContent())
+				return m, cmd
 			}
 		}
 
-		if !found {
-			key := msg.Key()
-			if key.Text != "" {
-				for _, r := range key.Text {
-					m.Buffer.Insert(r)
-				}
+		key := msg.Key()
+		if key.Text != "" {
+			for _, r := range key.Text {
+				m.Buffer.Insert(r)
 			}
 		}
 
