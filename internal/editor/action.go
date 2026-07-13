@@ -102,6 +102,18 @@ func DefaultActions() []Action {
 			},
 		},
 		Action{
+			Binding: "shift+ctrl+Rune[v]",
+			Command: "paste",
+			HasArgs: false,
+			Callback: func(m *Model, args []string) {
+				m.Screen.GetClipboard()
+				
+				//for _, r := range m.Screen.GetClipboard() {
+				//	m.Current().Insert(r)
+				//}
+			},
+		},
+		Action{
 			Binding: "ctrl+c",
 			Command: "q",
 			HasArgs: false,

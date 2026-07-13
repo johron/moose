@@ -2,7 +2,7 @@
 
 build:
 	@mkdir -p build
-	go build -o build/moose .
+	go build -o "build/moose-debug" .
 
 release:
 	@mkdir -p build
