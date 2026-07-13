@@ -14,7 +14,7 @@ func DefaultActions() []Action {
 			Command: "TODO:",
 			HasArgs: false,
 			Callback: func(m *Model, args []string) {
-				m.Buffer.MoveHoriz(-1)	
+				m.Current().MoveHoriz(-1)	
 			},
 		},
 		Action{
@@ -22,7 +22,7 @@ func DefaultActions() []Action {
 			Command: "TODO:",
 			HasArgs: false,
 			Callback: func(m *Model, args []string) {
-				m.Buffer.MoveHoriz(1)
+				m.Current().MoveHoriz(1)
 			},
 		},
 		Action{
@@ -30,7 +30,7 @@ func DefaultActions() []Action {
 			Command: "TODO:",
 			HasArgs: false,
 			Callback: func(m *Model, args []string) {
-				m.Buffer.MoveVert(-1)
+				m.Current().MoveVert(-1)
 			},
 		},
 		Action{
@@ -38,7 +38,7 @@ func DefaultActions() []Action {
 			Command: "TODO:",
 			HasArgs: false,
 			Callback: func(m *Model, args []string) {
-				m.Buffer.MoveVert(1)
+				m.Current().MoveVert(1)
 			},
 		},
 		Action{
@@ -46,7 +46,7 @@ func DefaultActions() []Action {
 			Command: "TODO:",
 			HasArgs: false,
 			Callback: func(m *Model, args []string) {
-				m.Buffer.AddCursorVert(-1)
+				m.Current().AddCursorVert(-1)
 			},
 		},
 		Action{
@@ -54,7 +54,7 @@ func DefaultActions() []Action {
 			Command: "TODO:",
 			HasArgs: false,
 			Callback: func(m *Model, args []string) {
-				m.Buffer.AddCursorVert(1)
+				m.Current().AddCursorVert(1)
 			},
 		},
 		Action{
@@ -62,7 +62,7 @@ func DefaultActions() []Action {
 			Command: "TODO:",
 			HasArgs: false,
 			Callback: func(m *Model, args []string) {
-				m.Buffer.ClearCursors()
+				m.Current().ClearCursors()
 			},
 		},
 		Action{
@@ -70,7 +70,10 @@ func DefaultActions() []Action {
 			Command: "TODO:",
 			HasArgs: false,
 			Callback: func(m *Model, args []string) {
-				//TODO: implement m.Buffer.
+				//TODO: implement m.Current().
+				for _ = range 4 {
+					m.Current().Insert(' ')
+				}
 			},
 		},
 		Action{
@@ -78,7 +81,8 @@ func DefaultActions() []Action {
 			Command: "TODO:",
 			HasArgs: false,
 			Callback: func(m *Model, args []string) {
-				// TODO: implement m.Buffer.
+				// TODO: implement m.Current().
+				
 			},
 		},
 		Action{
@@ -86,7 +90,7 @@ func DefaultActions() []Action {
 			Command: "TODO:",
 			HasArgs: false,
 			Callback: func(m *Model, args []string) {
-				m.Buffer.Delete()
+				m.Current().Delete()
 			},
 		},
 		Action{
@@ -94,7 +98,7 @@ func DefaultActions() []Action {
 			Command: "TODO:",
 			HasArgs: false,
 			Callback: func(m *Model, args []string) {
-				m.Buffer.Insert('\n')
+				m.Current().Insert('\n')
 			},
 		},
 		Action{

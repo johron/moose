@@ -6,9 +6,29 @@ import (
 	"github.com/zyedidia/rope"
 )
 
+type BufferManager struct {
+	Buffers       []Buffer
+	CurrentIdx    int
+	CommandBuffer Buffer
+}
+
+func (bm *BufferManager) Current() *Buffer {
+	return &bm.Buffers[bm.CurrentIdx]
+}
+
 type Buffer struct {
 	Rope *rope.Node
 	CM   CursorManager
+}
+
+func NewBuffer() Buffer {
+	return Buffer{
+		Rope: rope.New([]byte{}),
+		CM: CursorManager{
+			Cursors:    []Cursor{{Offset: 0, Goal: 0}},
+			PrimaryIdx: 0,
+		},
+	}
 }
 
 func (buf *Buffer) ensureRope() {

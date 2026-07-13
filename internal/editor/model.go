@@ -1,38 +1,39 @@
 package editor
 
 import (
-	"moose/internal/buffer"
-	"github.com/zyedidia/rope"
-
-	"unicode/utf8"
 	"strings"
+	"moose/internal/buffer"
+	"github.com/gdamore/tcell/v3"
 )
 
 type Model struct {
-	Buffer        buffer.Buffer
-	CommandBuffer buffer.Buffer
+	Screen		  tcell.Screen
+	Style		  tcell.Style
+	Mode		  Mode
+	BM			  buffer.BufferManager
 	Actions       []Action
-	Width         int
-	Height        int
 	ShouldQuit   bool
 }
 
-func NewModel() Model {
-	initialBuf := buffer.Buffer{
-		Rope: rope.New([]byte{}),
-		CM: buffer.CursorManager{
-			Cursors:    []buffer.Cursor{{Offset: 0, Goal: 0}},
-			PrimaryIdx: 0,
-		},
-	}
+type Mode int
+const (
+	ModeNormal Mode = iota
+	ModeInsert
+	ModeCommand
+)
 
-	//vp := viewport.New()
-	//vp.MouseWheelEnabled = false
-
+func NewModel(screen tcell.Screen, style tcell.Style) Model {
 	model := Model{
-		Buffer:   initialBuf,
-		Actions: DefaultActions(),
-		ShouldQuit: false,
+		Screen:	       screen,
+		Style:		   style,
+		Mode:		   ModeNormal,
+		BM:            buffer.BufferManager{
+			Buffers:       []buffer.Buffer{buffer.NewBuffer()},
+			CurrentIdx:     0,
+			CommandBuffer: buffer.NewBuffer(),
+		},
+		Actions:       DefaultActions(),
+		ShouldQuit:    false,
 	}
 
 	return model
@@ -42,54 +43,45 @@ func (m *Model) Quit() {
 	m.ShouldQuit = true
 }
 
-func (m Model) ToString() string {
-	content := []byte(m.Buffer.String())
+func (m *Model) Current() *buffer.Buffer {
+	if m.Mode == ModeCommand {
+		return &m.BM.CommandBuffer
+	} else {
+		return m.BM.Current()
+	}
+}
 
-	cursorMap := make(map[int]bool)
-	for _, cur := range m.Buffer.CM.Cursors {
-		offset := cur.Offset
-		if offset < 0 {
-			offset = 0
+func (m Model) Render() {
+	len := len(m.BM.Buffers)
+	sWidth, _ := m.Screen.Size()
+	width := sWidth / len
+
+	for i, buf := range m.BM.Buffers {
+		table := strings.SplitAfter(buf.String(), "\n")
+		for j, line := range table {
+			m.Screen.PutStrStyled(width * i, j, line, m.Style)
 		}
-		if offset > len(content) {
-			offset = len(content)
+
+		for _, cur := range buf.CM.Cursors {
+			line, col := buffer.LineCol(buf.Rope, cur.Offset)
+			m.Screen.SetContent(width * i + col, line, ' ', nil, m.Style.Reverse(true))
 		}
-		cursorMap[offset] = true
+	}
+}
+
+func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
+	for i := range m.Actions {
+		action := m.Actions[i]
+
+		if strings.ToLower(ev.Name()) == strings.ToLower(action.Binding) {
+			action.Callback(m, []string{})
+			return
+		}
 	}
 
-	var out strings.Builder
-	out.Grow(len(content) + len(cursorMap))
-
-	for i := 0; i < len(content); {
-		r, size := utf8.DecodeRune(content[i:])
-		if r == utf8.RuneError && size == 1 {
-			if cursorMap[i] {
-				out.WriteRune('█')
-				i++
-				continue
-			}
-
-			out.WriteByte(content[i])
-			i++
-			continue
+	if ev.Key() == tcell.KeyRune {
+		for _, r := range ev.Str() {
+			m.Current().Insert(r)
 		}
-
-		if cursorMap[i] {
-			out.WriteRune('█')
-			if r == '\n' {
-				out.WriteRune('\n')
-			}
-			i += size
-			continue
-		}
-
-		out.WriteRune(r)
-		i += size
 	}
-
-	if cursorMap[len(content)] {
-		out.WriteRune('█')
-	}
-
-	return out.String()
 }
