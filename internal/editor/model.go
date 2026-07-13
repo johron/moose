@@ -2,20 +2,15 @@ package editor
 
 import (
 	"moose/internal/buffer"
-	"strings"
-	"unicode/utf8"
-
-	"charm.land/bubbles/v2/viewport"
-	tea "charm.land/bubbletea/v2"
 )
 
 type Model struct {
 	Buffer        buffer.Buffer
 	CommandBuffer buffer.Buffer
-	Viewport      viewport.Model
 	Actions       []Action
 	Width         int
 	Height        int
+	ShouldQuit   bool
 }
 
 func NewModel() Model {
@@ -27,19 +22,23 @@ func NewModel() Model {
 		},
 	}
 
-	vp := viewport.New()
-	vp.MouseWheelEnabled = false
+	//vp := viewport.New()
+	//vp.MouseWheelEnabled = false
 
 	model := Model{
 		Buffer:   initialBuf,
-		Viewport: vp,
 		Actions: DefaultActions(),
+		ShouldQuit: false,
 	}
 
-	model.Viewport.SetContent(model.renderedContent())
 	return model
 }
 
+func (m *Model) Quit() {
+	m.ShouldQuit = true
+}
+
+/*
 func (m Model) Init() tea.Cmd {
 	return nil
 }
@@ -102,3 +101,5 @@ func (m Model) renderedContent() string {
 
 	return out.String()
 }
+
+*/

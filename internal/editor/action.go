@@ -1,152 +1,113 @@
 package editor
 
 import (
-	"charm.land/bubbles/v2/key"
-	tea "charm.land/bubbletea/v2"
+	//"charm.land/bubbles/v2/key"
+	//tea "charm.land/bubbletea/v2"
 )
 
 type Action = struct {
-	Binding  key.Binding
+	Binding  string
 	Command  string
 	HasArgs  bool
-	Callback func(*Model, []string) tea.Cmd
+	Callback func(*Model, []string)
 }
-
-//type Actionmap = struct {
-//	Left, Right, Up, Down, CursorUp, CursorDown, ClearCursors, Tab, Backtab, Newline, Delete, Quit Action
-//}
 
 func DefaultActions() []Action {
 	return []Action{
 		Action{
-			Binding: key.NewBinding(
-				key.WithKeys("left"),
-			),
+			Binding: "left",
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m *Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) {
 				m.Buffer.MoveHoriz(-1)	
-				return nil
 			},
 		},
 		Action{
-			Binding: key.NewBinding(
-				key.WithKeys("right"),
-			),
+			Binding: "right",
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m *Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) {
 				m.Buffer.MoveHoriz(1)
-				return nil
 			},
 		},
 		Action{
-			Binding: key.NewBinding(
-				key.WithKeys("up"),
-			),
+			Binding: "up",
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m *Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) {
 				m.Buffer.MoveVert(-1)
-				return nil
 			},
 		},
 		Action{
-			Binding: key.NewBinding(
-				key.WithKeys("down"),
-			),
+			Binding: "down",
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m *Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) {
 				m.Buffer.MoveVert(1)
-				return nil
 			},
 		},
 		Action{
-			Binding: key.NewBinding(
-				key.WithKeys("shift+up"),
-			),
+			Binding: "shift+up",
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m *Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) {
 				m.Buffer.AddCursorVert(-1)
-				return nil
 			},
 		},
 		Action{
-			Binding: key.NewBinding(
-				key.WithKeys("shift+down"),
-			),
+			Binding: "shift+down",
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m *Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) {
 				m.Buffer.AddCursorVert(1)
-				return nil
 			},
 		},
 		Action{
-			Binding: key.NewBinding(
-				key.WithKeys("esc"),
-			),
+			Binding: "esc",
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m *Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) {
 				m.Buffer.ClearCursors()
-				return nil
 			},
 		},
 		Action{
-			Binding: key.NewBinding(
-				key.WithKeys("tab"),
-			),
+			Binding: "tab",
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m *Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) {
 				//TODO: implement m.Buffer.
-				return nil
 			},
 		},
 		Action{
-			Binding: key.NewBinding(
-				key.WithKeys("shift+tab"),
-			),
+			Binding: "shift+tab",
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m *Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) {
 				// TODO: implement m.Buffer.
-				return nil
 			},
 		},
 		Action{
-			Binding: key.NewBinding(
-				key.WithKeys("backspace"),
-			),
+			Binding: "backspace",
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m *Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) {
 				m.Buffer.Delete()
-				return nil
 			},
 		},
 		Action{
-			Binding: key.NewBinding(
-				key.WithKeys("enter"),
-			),
+			Binding: "enter",
 			Command: "TODO:",
 			HasArgs: false,
-			Callback: func(m *Model, args []string) tea.Cmd {
+			Callback: func(m *Model, args []string) {
 				m.Buffer.Insert('\n')
-				return nil
 			},
 		},
 		Action{
-			Binding: key.NewBinding(
-				key.WithKeys("ctrl+c"),
-			),
+			Binding: "ctrl+c",
 			Command: "q",
 			HasArgs: false,
-			Callback: func(m *Model, args []string) tea.Cmd {
-				return tea.Quit
+			Callback: func(m *Model, args []string) {
+				m.Quit()
 			},
 		},
 	}

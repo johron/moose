@@ -2,11 +2,11 @@ package editor
 
 import (
 	//"fmt"
-	"charm.land/bubbles/v2/key"
-	tea "charm.land/bubbletea/v2"
+	//"github.com/gdamore/tcell"
+
 )
 
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+/*func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.Width = msg.Width
@@ -47,3 +47,4 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	return m, nil
 }
+*/
