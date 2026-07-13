@@ -3,7 +3,6 @@ package buffer
 import (
 	"slices"
 	"unicode/utf8"
-
 	"github.com/zyedidia/rope"
 )
 

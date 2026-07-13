@@ -3,14 +3,10 @@ package main
 import (
 	"fmt"
 	"os"
-
+	"moose/internal/buffer"
 	"moose/internal/editor"
-
-	//"unicode/utf8"
 	"strings"
 	"github.com/gdamore/tcell/v3"
-
-	//tea "charm.land/bubbletea/v2"
 )
 
 func main() {
@@ -45,12 +41,12 @@ func main() {
 		s.Clear()
 
 		if m.ShouldQuit {
-			s.PutStrStyled(0, 2, "tried to quit", defStyle)
 			return
 		}
 
 		ev := <-s.EventQ()
 
+		outer:
 		switch ev := ev.(type) {
 		case *tcell.EventResize:
 			s.Sync()
@@ -59,29 +55,28 @@ func main() {
 				action := m.Actions[i]
 
 				if strings.ToLower(ev.Name()) == strings.ToLower(action.Binding) {
-					s.PutStrStyled(0, 1, "found match", defStyle)
 					action.Callback(&m, []string{})
-					break
+					break outer
 				}
 			}
 
-			//if utf8.RuneCountInString(ev.Name()) == 1 {
-			if ev.Name() != "" {
-				for _, r := range ev.Name() {
+			if ev.Key() == tcell.KeyRune {
+				for _, r := range ev.Str() {
 					m.Buffer.Insert(r)
 				}
 			}
-
-			s.PutStrStyled(0, 0, strings.ToLower(ev.Name()), defStyle)
 		}
+
+		table := strings.SplitAfter(m.Buffer.String(), "\n")
+		for i, line := range table {
+			s.PutStrStyled(0, i, line, defStyle)
+		}
+
+		for _, cur := range m.Buffer.CM.Cursors {
+			line, col := buffer.LineCol(m.Buffer.Rope, cur.Offset)
+			s.SetContent(col, line, ' ', nil, tcell.StyleDefault.Reverse(true))
+		}
+
 		s.Show()
 	}
-
-	//model := editor.NewModel()
-//
-	//p := tea.NewProgram(model)
-	//if _, err := p.Run(); err != nil {
-	//	fmt.Printf("moose: error: %v", err)
-	//	os.Exit(1)
-	//}
 }

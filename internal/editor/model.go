@@ -2,6 +2,10 @@ package editor
 
 import (
 	"moose/internal/buffer"
+	"github.com/zyedidia/rope"
+
+	"unicode/utf8"
+	"strings"
 )
 
 type Model struct {
@@ -15,7 +19,7 @@ type Model struct {
 
 func NewModel() Model {
 	initialBuf := buffer.Buffer{
-		Rope: nil,
+		Rope: rope.New([]byte{}),
 		CM: buffer.CursorManager{
 			Cursors:    []buffer.Cursor{{Offset: 0, Goal: 0}},
 			PrimaryIdx: 0,
@@ -38,19 +42,7 @@ func (m *Model) Quit() {
 	m.ShouldQuit = true
 }
 
-/*
-func (m Model) Init() tea.Cmd {
-	return nil
-}
-
-func (m Model) View() tea.View {
-	v := tea.NewView(m.Viewport.View())
-	v.AltScreen = true
-	v.MouseMode = tea.MouseModeCellMotion
-	return v
-}
-
-func (m Model) renderedContent() string {
+func (m Model) ToString() string {
 	content := []byte(m.Buffer.String())
 
 	cursorMap := make(map[int]bool)
@@ -101,5 +93,3 @@ func (m Model) renderedContent() string {
 
 	return out.String()
 }
-
-*/
