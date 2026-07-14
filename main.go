@@ -10,11 +10,11 @@ import (
 func main() {
 	s, err := tcell.NewScreen()
 	if err != nil {
-		fmt.Println("moose: error: %v", err)
+		fmt.Printf("moose: error: %v", err)
 		os.Exit(1)
 	}
 	if err := s.Init(); err != nil {
-		fmt.Println("moose: error: %v", err)
+		fmt.Printf("moose: error: %v", err)
 		os.Exit(1)
 	}
 

@@ -21,7 +21,7 @@ func NewModel(screen tcell.Screen, style tcell.Style) Model {
 		Style:		   style,
 		Mode:		   ModeNormal,
 		BM:            buffer.BufferManager{
-			Buffers:       []buffer.Buffer{buffer.NewBuffer(), buffer.NewBuffer()},
+			Buffers:       []buffer.Buffer{buffer.NewBuffer()},
 			CurrentIdx:    0,
 			PaletteBuffer: buffer.NewBuffer(),
 		},
@@ -58,7 +58,6 @@ func (m Model) Render() {
 		table := strings.SplitAfter(buf.String(), "\n")
 		for j, line := range table {
 			if j + 1 > maxHeight { break }
-			//if len(line) + 1 > bufWidth { continue }
 
 			r := []rune(line)
 			if len(r) + 1 > bufWidth {
