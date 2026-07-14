@@ -66,6 +66,12 @@ func (buf *Buffer) Insert(content rune) {
 	}
 }
 
+func (buf *Buffer) Paste(content string) {
+	for _, r := range content {
+		buf.Insert(r)
+	}
+}
+
 func (buf *Buffer) Delete() {
 	buf.ensureRope()
 
@@ -109,6 +115,19 @@ func (buf *Buffer) Delete() {
 	}
 
 	buf.CM.DeduplicateAndSort()
+}
+
+func (buf *Buffer) Clear() {
+	primaryCursor := &Cursor{
+		Offset: 0,
+		Goal:   0,
+	}
+
+	buf.CM.Cursors = buf.CM.Cursors[:0]
+	buf.CM.Cursors = append(buf.CM.Cursors, *primaryCursor)
+	buf.CM.PrimaryIdx = 0
+
+	buf.Rope.Remove(0, buf.Rope.Len())
 }
 
 func (buf *Buffer) MoveHoriz(dir int) {

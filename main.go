@@ -24,6 +24,7 @@ func main() {
 	m := editor.NewModel(s, style)
 
 	s.EnableMouse()
+	s.DisablePaste()
 	s.Clear()
 
 	quit := func() {
@@ -47,6 +48,8 @@ func main() {
 		switch ev := ev.(type) {
 		case *tcell.EventResize:
 			s.Sync()
+		case *tcell.EventClipboard:
+			m.BM.Current().Paste(string(ev.Data()))
 		case *tcell.EventKey:
 			m.HandleKeyInput(ev)
 		}
