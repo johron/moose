@@ -21,7 +21,7 @@ func NewModel(screen tcell.Screen, style tcell.Style) Model {
 		Style:		   style,
 		Mode:		   ModeNormal,
 		BM:            buffer.BufferManager{
-			Buffers:       []buffer.Buffer{buffer.NewBuffer()},
+			Buffers:       []buffer.Buffer{buffer.NewBuffer(), buffer.NewBuffer()},
 			CurrentIdx:    0,
 			PaletteBuffer: buffer.NewBuffer(),
 		},
@@ -57,14 +57,21 @@ func (m Model) Render() {
 	for i, buf := range m.BM.Buffers {
 		table := strings.SplitAfter(buf.String(), "\n")
 		for j, line := range table {
-			m.Screen.PutStrStyled(bufWidth * i, j, line, m.Style)
-
 			if j + 1 > maxHeight { break }
+			//if len(line) + 1 > bufWidth { continue }
+
+			r := []rune(line)
+			if len(r) + 1 > bufWidth {
+				r = r[:bufWidth]
+			}
+
+			m.Screen.PutStrStyled(bufWidth*i, j, string(r), m.Style)
 		}
 
 		for _, cur := range buf.CM.Cursors {
 			line, col := buffer.LineCol(buf.Rope, cur.Offset)
 			if line + 1 > maxHeight { continue }
+			if col + 1 > bufWidth { continue }
 
 			m.Screen.SetContent(bufWidth * i + col, line, ' ', nil, m.Style.Reverse(true))
 		}
