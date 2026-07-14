@@ -9,7 +9,7 @@ import (
 type BufferManager struct {
 	Buffers       []Buffer
 	CurrentIdx    int
-	CommandBuffer Buffer
+	PaletteBuffer Buffer
 }
 
 func (bm *BufferManager) Current() *Buffer {

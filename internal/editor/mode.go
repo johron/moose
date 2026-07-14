@@ -4,14 +4,14 @@ type Mode int
 const (
 	ModeNormal Mode = iota
 	ModeInsert
-	ModeCommand
+	ModePalette
 )
 
 func (mode Mode) String() string {
 	switch mode {
 	case ModeNormal:  return "normal"
 	case ModeInsert:  return "insert"
-	case ModeCommand: return "command"
+	case ModePalette: return "command"
 	}
 
 	return "unknown"

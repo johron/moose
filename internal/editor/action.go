@@ -8,7 +8,7 @@ type ActionManager = struct {
 	Common  []Action
 	Normal  []Action
 	Insert  []Action
-	Command []Action
+	Palette []Action
 }
 
 type Action = struct {
@@ -66,9 +66,9 @@ func DefaultActionManager() ActionManager {
 			Action{
 				Binding: "Rune[q]",
 				Callback: func(m *Model, args []string) {
-					m.Mode = ModeCommand
-					m.BM.CommandBuffer.Clear()
-					m.BM.CommandBuffer.Insert('/')
+					m.Mode = ModePalette
+					m.BM.PaletteBuffer.Clear()
+					m.BM.PaletteBuffer.Insert('/')
 				},
 			},
 		},
@@ -141,17 +141,17 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 		},
-		Command: []Action{
+		Palette: []Action{
 			Action{
 				Binding: "backspace",
 				Callback: func(m *Model, args []string) {
-					m.BM.CommandBuffer.Delete()
+					m.BM.PaletteBuffer.Delete()
 				},
 			},
 			Action{
 				Binding: "enter",
 				Callback: func(m *Model, _ []string) {
-					input := m.BM.CommandBuffer.String()
+					input := m.BM.PaletteBuffer.String()
 					args := strings.Split(input, " ")
 
 					if args[0] == "" {
@@ -159,18 +159,24 @@ func DefaultActionManager() ActionManager {
 						return
 					}
 
+					cmd := string([]rune(args[0])[1:])
 					if strings.HasPrefix(args[0], "/") {
 						for _, action := range append(m.AM.Common, append(m.AM.Normal, m.AM.Insert...)...) {
-							if action.Command != "" && string([]rune(args[0])[1:]) == action.Command {
+							if action.Command != "" && cmd == action.Command {
 								m.Mode = ModeNormal
 								action.Callback(m, args[1:])
 								return
 							}
 						}
-					}
 
-					m.Mode = ModeNormal
-					// TODO: Write an error to the commandbuffer 
+						m.Mode = ModeNormal
+						m.BM.PaletteBuffer.Clear()
+						m.BM.PaletteBuffer.Paste("moose.error:Unknown command \"" + cmd + "\"")
+					} else {
+						m.Mode = ModeNormal
+						m.BM.PaletteBuffer.Clear()
+						m.BM.PaletteBuffer.Paste("moose.error:Unknown palette input \"" + cmd + "\"")
+					}
 				},
 			},
 		},

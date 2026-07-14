@@ -23,7 +23,7 @@ func NewModel(screen tcell.Screen, style tcell.Style) Model {
 		BM:            buffer.BufferManager{
 			Buffers:       []buffer.Buffer{buffer.NewBuffer()},
 			CurrentIdx:    0,
-			CommandBuffer: buffer.NewBuffer(),
+			PaletteBuffer: buffer.NewBuffer(),
 		},
 		AM:       DefaultActionManager(),
 		ShouldQuit:    false,
@@ -36,7 +36,7 @@ func (m *Model) CurrentActionSet() []Action {
 	switch m.Mode {
 	case ModeNormal:  return m.AM.Normal
 	case ModeInsert:  return m.AM.Insert
-	case ModeCommand: return m.AM.Command
+	case ModePalette: return m.AM.Palette
 	}
 
 	return nil
@@ -77,8 +77,10 @@ func (m Model) Render() {
 	modeStr := m.Mode.String()
 	m.Screen.PutStrStyled(sWidth - (len(modeStr) + 1), maxHeight, strings.ToUpper(modeStr), m.Style.Reverse(true))
 
-	if m.Mode == ModeCommand {
-		m.Screen.PutStrStyled(0, maxHeight + 1, m.BM.CommandBuffer.String(), m.Style)
+	if m.Mode == ModePalette {
+		m.Screen.PutStrStyled(0, maxHeight + 1, m.BM.PaletteBuffer.String(), m.Style)
+	} else if strings.HasPrefix(m.BM.PaletteBuffer.String(), "moose.error:") {
+		m.Screen.PutStrStyled(0, maxHeight + 1, string([]rune(m.BM.PaletteBuffer.String())[12:]), m.Style.Foreground(tcell.ColorRed))
 	}
 }
 
@@ -86,8 +88,8 @@ func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
 	for _, action := range append(m.AM.Common, m.CurrentActionSet()...) {
 		if action.Binding != "" && strings.ToLower(ev.Name()) == strings.ToLower(action.Binding) {
 			if action.Command != "" && action.HasArgs == true {
-				m.Mode = ModeCommand
-				m.BM.CommandBuffer.Paste(action.Command)
+				m.Mode = ModePalette
+				m.BM.PaletteBuffer.Paste(action.Command)
 				return
 			}
 
@@ -103,10 +105,10 @@ func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
 			}
 		}
 	}
-	if m.Mode == ModeCommand {
+	if m.Mode == ModePalette {
 		if ev.Key() == tcell.KeyRune {
 			for _, r := range ev.Str() {
-				m.BM.CommandBuffer.Insert(r)
+				m.BM.PaletteBuffer.Insert(r)
 			}
 		}
 	}
