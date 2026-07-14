@@ -72,7 +72,11 @@ func (m Model) Render() {
 			if line + 1 > maxHeight { continue }
 			if col + 1 > bufWidth { continue }
 
-			m.Screen.SetContent(bufWidth * i + col, line, ' ', nil, m.Style.Reverse(true))
+			if i == m.BM.CurrentIdx && m.Mode != ModePalette {
+				m.Screen.SetContent(bufWidth * i + col, line, ' ', nil, m.Style.Reverse(true))
+			} else {
+				m.Screen.SetContent(bufWidth * i + col, line, ' ', nil, m.Style.Reverse(true).Foreground(tcell.ColorGray))				
+			}
 		}
 	}
 
