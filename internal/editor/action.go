@@ -2,6 +2,7 @@ package editor
 
 import(
 	"strings"
+	"os"
 )
 
 type ActionManager = struct {
@@ -14,7 +15,7 @@ type ActionManager = struct {
 type Action = struct {
 	Binding  string
 	Command  string
-	HasArgs  bool
+	NeedsArgs  bool
 	Callback func(*Model, []string)
 }
 
@@ -42,17 +43,70 @@ func DefaultActionManager() ActionManager {
 			Action{
 				Binding: "shift+ctrl+Rune[v]",
 				Command: "paste",
-				HasArgs: false,
+				NeedsArgs: false,
 				Callback: func(m *Model, args []string) {
 					m.Screen.GetClipboard()
 				},
 			},
 			Action{
-				Binding: "ctrl+c",
+				Binding: "ctrl+q",
 				Command: "q",
-				HasArgs: true,
+				NeedsArgs: true,
 				Callback: func(m *Model, args []string) {
 					m.Quit()
+				},
+			},
+			Action{
+				Binding: "ctrl+w",
+				Command: "w",
+				NeedsArgs: false,
+				Callback: func(m *Model, args []string) {
+					path := ""
+					if len(args) < 1 || args[0] == "" {
+						if m.BM.Current().Path == "" {
+							m.Mode = ModeNormal
+							m.BM.PaletteBuffer.Clear()
+							m.BM.PaletteBuffer.Paste("moose.error:Missing filename argument for write")
+							return
+						}
+					}
+
+					if len(args) > 0 && args[0] != "" {
+						m.BM.Current().Path = args[0]
+					}
+
+					path = m.BM.Current().Path
+
+					data := []byte(m.BM.Current().String())
+					err := os.WriteFile(path, data, 0644)
+					if err != nil {
+						m.Mode = ModeNormal
+						m.BM.PaletteBuffer.Clear()
+						m.BM.PaletteBuffer.Paste("moose.error:Could not write to file \"" + path + "\": " + err.Error())
+						return
+					}
+				},
+			},
+			Action{
+				Binding: "shift+ctrl+Rune[w]",
+				Command: "wp",
+				NeedsArgs: true,
+				Callback: func(m *Model, args []string) {
+					if len(args) < 1 || args[0] == "" {
+						m.Mode = ModeNormal
+						m.BM.PaletteBuffer.Clear()
+						m.BM.PaletteBuffer.Paste("moose.error:Missing filename argument for write")
+						return
+					}
+
+					data := []byte(m.BM.Current().String())
+					err := os.WriteFile(args[0], data, 0644)
+					if err != nil {
+						m.Mode = ModeNormal
+						m.BM.PaletteBuffer.Clear()
+						m.BM.PaletteBuffer.Paste("moose.error:Could not write to file \"" + args[0] + "\": " + err.Error())
+						return
+					}
 				},
 			},
 		},
@@ -88,7 +142,7 @@ func DefaultActionManager() ActionManager {
 			Action{
 				Binding: "shift+up",
 				Command: "TODO:",
-				HasArgs: false,
+				NeedsArgs: false,
 				Callback: func(m *Model, args []string) {
 					m.BM.Current().AddCursorVert(-1)
 				},
@@ -96,7 +150,7 @@ func DefaultActionManager() ActionManager {
 			Action{
 				Binding: "shift+down",
 				Command: "TODO:",
-				HasArgs: false,
+				NeedsArgs: false,
 				Callback: func(m *Model, args []string) {
 					m.BM.Current().AddCursorVert(1)
 				},
@@ -104,7 +158,7 @@ func DefaultActionManager() ActionManager {
 			Action{
 				Binding: "esc",
 				Command: "TODO:",
-				HasArgs: false,
+				NeedsArgs: false,
 				Callback: func(m *Model, args []string) {
 					m.BM.Current().ClearCursors()
 				},
@@ -112,7 +166,7 @@ func DefaultActionManager() ActionManager {
 			Action{
 				Binding: "tab",
 				Command: "TODO:",
-				HasArgs: false,
+				NeedsArgs: false,
 				Callback: func(m *Model, args []string) {
 					for _ = range 4 {
 						m.BM.Current().Insert(' ')
@@ -122,7 +176,7 @@ func DefaultActionManager() ActionManager {
 			Action{
 				Binding: "shift+tab",
 				Command: "TODO:",
-				HasArgs: false,
+				NeedsArgs: false,
 				Callback: func(m *Model, args []string) {
 					// TODO: implement m.BM.Current().remove...
 					

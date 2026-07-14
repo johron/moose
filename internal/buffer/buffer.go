@@ -19,6 +19,7 @@ func (bm *BufferManager) Current() *Buffer {
 type Buffer struct {
 	Rope *rope.Node
 	CM   CursorManager
+	Path string
 }
 
 func NewBuffer() Buffer {

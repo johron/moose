@@ -93,9 +93,10 @@ func (m Model) Render() {
 func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
 	for _, action := range append(m.AM.Common, m.CurrentActionSet()...) {
 		if action.Binding != "" && strings.ToLower(ev.Name()) == strings.ToLower(action.Binding) {
-			if action.Command != "" && action.HasArgs == true {
+			if action.Command != "" && action.NeedsArgs == true {
 				m.Mode = ModePalette
-				m.BM.PaletteBuffer.Paste(action.Command)
+				m.BM.PaletteBuffer.Clear()
+				m.BM.PaletteBuffer.Paste("/" + action.Command)
 				return
 			}
 
