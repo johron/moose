@@ -203,6 +203,18 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 			Action{
+				Binding: "left",
+				Callback: func(m *Model, args []string) {
+					m.BM.PaletteBuffer.MoveHoriz(-1)	
+				},
+			},
+			Action{
+				Binding: "right",
+				Callback: func(m *Model, args []string) {
+					m.BM.PaletteBuffer.MoveHoriz(1)
+				},
+			},
+			Action{
 				Binding: "enter",
 				Callback: func(m *Model, _ []string) {
 					input := m.BM.PaletteBuffer.String()

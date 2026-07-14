@@ -11,7 +11,7 @@ func (mode Mode) String() string {
 	switch mode {
 	case ModeNormal:  return "normal"
 	case ModeInsert:  return "insert"
-	case ModePalette: return "command"
+	case ModePalette: return "palette"
 	}
 
 	return "unknown"

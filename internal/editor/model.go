@@ -85,13 +85,21 @@ func (m Model) Render() {
 
 	if m.Mode == ModePalette {
 		m.Screen.PutStrStyled(0, maxHeight + 1, m.BM.PaletteBuffer.String(), m.Style)
+
+		for _, cur := range m.BM.PaletteBuffer.CM.Cursors {
+			line, col := buffer.LineCol(m.BM.PaletteBuffer.Rope, cur.Offset)
+			if line + maxHeight != maxHeight { continue }
+			if col + 1 > sWidth { continue }
+
+			m.Screen.SetContent(col, maxHeight + 1, ' ', nil, m.Style.Reverse(true))
+		}
 	} else if strings.HasPrefix(m.BM.PaletteBuffer.String(), "moose.error:") {
 		m.Screen.PutStrStyled(0, maxHeight + 1, string([]rune(m.BM.PaletteBuffer.String())[12:]), m.Style.Foreground(tcell.ColorRed))
 	}
 }
 
 func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
-	for _, action := range append(m.AM.Common, m.CurrentActionSet()...) {
+	for _, action := range append(m.CurrentActionSet(), m.AM.Common...) {
 		if action.Binding != "" && strings.ToLower(ev.Name()) == strings.ToLower(action.Binding) {
 			if action.Command != "" && action.NeedsArgs == true {
 				m.Mode = ModePalette
