@@ -17,14 +17,17 @@ func (bm *BufferManager) Current() *Buffer {
 }
 
 type Buffer struct {
-	Rope *rope.Node
-	CM   CursorManager
-	Path string
+	Rope    *rope.Node
+	LI      *LineIndex
+	CM      CursorManager
+	Path    string
+	TopLine int
 }
 
 func NewBuffer() Buffer {
 	return Buffer{
 		Rope: rope.New([]byte{}),
+		LI:   NewLineIndex(),
 		CM: CursorManager{
 			Cursors:    []Cursor{{Offset: 0, Goal: 0}},
 			PrimaryIdx: 0,
@@ -35,6 +38,9 @@ func NewBuffer() Buffer {
 func (buf *Buffer) ensureRope() {
 	if buf.Rope == nil {
 		buf.Rope = rope.New([]byte{})
+	}
+	if buf.LI == nil {
+		buf.LI = NewLineIndexFromRope(buf.Rope)
 	}
 }
 
@@ -59,8 +65,10 @@ func (buf *Buffer) Insert(content rune) {
 		}
 
 		buf.Rope.Insert(pos, data)
+		buf.LI.InsertAt(pos, data)
+
 		cur.Offset = pos + shift
-		_, goal := LineCol(buf.Rope, cur.Offset)
+		_, goal := LineCol(buf, cur.Offset)
 		cur.Goal = goal
 
 		delta += shift
@@ -106,12 +114,13 @@ func (buf *Buffer) Delete() {
 		}
 
 		buf.Rope.Remove(start, pos)
+		buf.LI.RemoveAt(start, pos)
 
 		deleted := pos - start
 		delta -= deleted
 
 		cur.Offset = start
-		_, goal := LineCol(buf.Rope, cur.Offset)
+		_, goal := LineCol(buf, cur.Offset)
 		cur.Goal = goal
 	}
 
@@ -119,6 +128,8 @@ func (buf *Buffer) Delete() {
 }
 
 func (buf *Buffer) Clear() {
+	buf.ensureRope()
+
 	primaryCursor := &Cursor{
 		Offset: 0,
 		Goal:   0,
@@ -129,6 +140,7 @@ func (buf *Buffer) Clear() {
 	buf.CM.PrimaryIdx = 0
 
 	buf.Rope.Remove(0, buf.Rope.Len())
+	buf.LI = NewLineIndex()
 }
 
 func (buf *Buffer) MoveHoriz(dir int) {
@@ -142,7 +154,7 @@ func (buf *Buffer) MoveHoriz(dir int) {
 		case dir > 0:
 			cur.Offset = nextRuneEnd(buf.Rope, cur.Offset)
 		}
-		_, goal := LineCol(buf.Rope, cur.Offset)
+		_, goal := LineCol(buf, cur.Offset)
 		cur.Goal = goal
 	}
 
@@ -154,15 +166,15 @@ func (buf *Buffer) MoveVert(dir int) {
 
 	for i := range buf.CM.Cursors {
 		cur := &buf.CM.Cursors[i]
-		line, _ := LineCol(buf.Rope, cur.Offset)
+		line, _ := LineCol(buf, cur.Offset)
 
 		targetLine := line + dir
-		if targetLine < 0 || targetLine >= LineCount(buf.Rope) {
+		if targetLine < 0 || targetLine >= LineCount(buf) {
 			continue
 		}
 
-		lineStart := OffsetForLine(buf.Rope, targetLine)
-		lineEnd := lineContentEnd(buf.Rope, targetLine)
+		lineStart := OffsetForLine(buf, targetLine)
+		lineEnd := lineContentEnd(buf, targetLine)
 		lineLen := runeCount(buf.Rope, lineStart, lineEnd)
 
 		goal := cur.Goal
@@ -170,7 +182,7 @@ func (buf *Buffer) MoveVert(dir int) {
 			goal = lineLen
 		}
 
-		cur.Offset = OffsetForLineCol(buf.Rope, targetLine, goal)
+		cur.Offset = OffsetForLineCol(buf, targetLine, goal)
 	}
 
 	buf.CM.DeduplicateAndSort()
@@ -184,15 +196,15 @@ func (buf *Buffer) AddCursorVert(dir int) {
 	for i := range buf.CM.Cursors {
 		cur := &buf.CM.Cursors[i]
 
-		line, _ := LineCol(buf.Rope, cur.Offset)
+		line, _ := LineCol(buf, cur.Offset)
 
 		targetLine := line + dir
-		if targetLine < 0 || targetLine >= LineCount(buf.Rope) {
+		if targetLine < 0 || targetLine >= LineCount(buf) {
 			continue
 		}
 
-		lineStart := OffsetForLine(buf.Rope, targetLine)
-		lineEnd := lineContentEnd(buf.Rope, targetLine)
+		lineStart := OffsetForLine(buf, targetLine)
+		lineEnd := lineContentEnd(buf, targetLine)
 		lineLen := runeCount(buf.Rope, lineStart, lineEnd)
 
 		goal := cur.Goal
@@ -201,7 +213,7 @@ func (buf *Buffer) AddCursorVert(dir int) {
 		}
 
 		newCursors = append(newCursors, Cursor{
-			Offset: OffsetForLineCol(buf.Rope, targetLine, goal),
+			Offset: OffsetForLineCol(buf, targetLine, goal),
 			Goal:   goal,
 		})
 	}
@@ -209,6 +221,20 @@ func (buf *Buffer) AddCursorVert(dir int) {
 	buf.CM.Cursors = slices.Concat(buf.CM.Cursors, newCursors)
 
 	buf.CM.DeduplicateAndSort()
+}
+
+func (buf *Buffer) ScrollToShow(line, maxHeight int) {
+	if maxHeight <= 0 {
+		return
+	}
+	if line < buf.TopLine {
+		buf.TopLine = line
+	} else if line >= buf.TopLine+maxHeight {
+		buf.TopLine = line - maxHeight + 1
+	}
+	if buf.TopLine < 0 {
+		buf.TopLine = 0
+	}
 }
 
 func (buf *Buffer) ClearCursors() {
@@ -222,63 +248,49 @@ func (buf *Buffer) ClearCursors() {
 	buf.CM.PrimaryIdx = 0
 }
 
-func LineCount(r *rope.Node) int {
-	return r.Count(0, r.Len(), []byte{'\n'}) + 1
+func LineCount(buf *Buffer) int {
+	return buf.LI.Count()
 }
 
-func LineCol(r *rope.Node, offset int) (line, col int) {
-	offset = normalizeOffset(r, offset)
+func LineCol(buf *Buffer, offset int) (line, col int) {
+	offset = normalizeOffset(buf.Rope, offset)
 
 	if offset < 0 {
 		offset = 0
 	}
-	if offset > r.Len() {
-		offset = r.Len()
+	if offset > buf.Rope.Len() {
+		offset = buf.Rope.Len()
 	}
 
-	line = r.Count(0, offset, []byte{'\n'})
+	line = buf.LI.LineForOffset(offset)
+	lineStart := buf.LI.OffsetForLine(line)
 
-	lineStart := 0
-	for i := offset - 1; i >= 0; i-- {
-		if r.At(i) == '\n' {
-			lineStart = i + 1
-			break
-		}
-	}
-
-	col = runeCount(r, lineStart, offset)
+	col = runeCount(buf.Rope, lineStart, offset)
 	return
 }
 
-func OffsetForLine(r *rope.Node, targetLine int) int {
+func OffsetForLine(buf *Buffer, targetLine int) int {
 	if targetLine <= 0 {
 		return 0
 	}
-
-	line := 0
-	for i := 0; i < r.Len(); i++ {
-		if r.At(i) == '\n' {
-			line++
-			if line == targetLine {
-				return i + 1
-			}
-		}
+	if targetLine >= buf.LI.Count() {
+		return buf.Rope.Len()
 	}
 
-	return r.Len()
+	return buf.LI.OffsetForLine(targetLine)
 }
 
-func OffsetForLineCol(r *rope.Node, line int, col int) int {
+func OffsetForLineCol(buf *Buffer, line int, col int) int {
 	if col <= 0 {
-		return OffsetForLine(r, line)
+		return OffsetForLine(buf, line)
 	}
 
-	start := OffsetForLine(r, line)
-	end := lineContentEnd(r, line)
+	start := OffsetForLine(buf, line)
+	end := lineContentEnd(buf, line)
 
 	i := start
 	for n := 0; i < end && n < col; n++ {
-		_, size := utf8.DecodeRune(r.Slice(i, end))
+		_, size := utf8.DecodeRune(buf.Rope.Slice(i, end))
 		if size <= 0 {
 			size = 1
 		}
@@ -292,9 +304,9 @@ func OffsetForLineCol(r *rope.Node, line int, col int) int {
 	return i
 }
 
-func lineContentEnd(r *rope.Node, line int) int {
-	nextStart := OffsetForLine(r, line+1)
-	if nextStart > 0 && nextStart <= r.Len() && r.At(nextStart-1) == '\n' {
+func lineContentEnd(buf *Buffer, line int) int {
+	nextStart := OffsetForLine(buf, line+1)
+	if nextStart > 0 && nextStart <= buf.Rope.Len() && buf.Rope.At(nextStart-1) == '\n' {
 		return nextStart - 1
 	}
 	return nextStart

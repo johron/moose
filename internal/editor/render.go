@@ -14,8 +14,21 @@ func (m Model) Render() {
 	bLen := len(m.BM.Buffers)
 	bufWidth := sWidth / bLen
 
-	for i, buf := range m.BM.Buffers {
-		table := strings.SplitAfter(buf.String(), "\n")
+	for i := range m.BM.Buffers {
+		buf := &m.BM.Buffers[i]
+
+		primary := buf.CM.Cursors[buf.CM.PrimaryIdx]
+		curLine, _ := buffer.LineCol(buf, primary.Offset)
+		buf.ScrollToShow(curLine, maxHeight)
+
+		startOffset := buffer.OffsetForLine(buf, buf.TopLine)
+		endOffset := buf.Rope.Len()
+		if endLine := buf.TopLine + maxHeight; endLine < buffer.LineCount(buf) {
+			endOffset = buffer.OffsetForLine(buf, endLine)
+		}
+
+		visible := string(buf.Rope.Slice(startOffset, endOffset))
+		table := strings.SplitAfter(visible, "\n")
 		for j, line := range table {
 			if j + 1 > maxHeight { break }
 
@@ -29,14 +42,15 @@ func (m Model) Render() {
 
 		if i == m.BM.CurrentIdx || m.Mode == ModePalette {
 			for _, cur := range buf.CM.Cursors {
-				line, col := buffer.LineCol(buf.Rope, cur.Offset)
-				if line + 1 > maxHeight { continue }
+				line, col := buffer.LineCol(buf, cur.Offset)
+				screenLine := line - buf.TopLine
+				if screenLine < 0 || screenLine + 1 > maxHeight { continue }
 				if col + 1 > bufWidth { continue }
 
 				if m.Mode == ModeWrite {
-					m.Screen.SetContent(bufWidth * i + col, line, ' ', nil, m.Style.Reverse(true))				
+					m.Screen.SetContent(bufWidth * i + col, screenLine, ' ', nil, m.Style.Reverse(true))				
 				} else {
-					m.Screen.SetContent(bufWidth * i + col, line, ' ', nil, m.Style.Reverse(true).Foreground(color.Gray))	
+					m.Screen.SetContent(bufWidth * i + col, screenLine, ' ', nil, m.Style.Reverse(true).Foreground(color.Gray))	
 				}
 			}
 		}
@@ -63,7 +77,7 @@ func (m Model) Render() {
 		m.Screen.PutStrStyled(0, maxHeight + 1, m.BM.PaletteBuffer.String(), m.Style)
 
 		for _, cur := range m.BM.PaletteBuffer.CM.Cursors {
-			line, col := buffer.LineCol(m.BM.PaletteBuffer.Rope, cur.Offset)
+			line, col := buffer.LineCol(&m.BM.PaletteBuffer, cur.Offset)
 			if line + maxHeight != maxHeight { continue }
 			if col + 1 > sWidth { continue }
 
