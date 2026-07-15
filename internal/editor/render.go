@@ -2,6 +2,7 @@ package editor
 
 import (
 	"strings"
+	"strconv"
 	"moose/internal/buffer"
 	"github.com/gdamore/tcell/v3/color"
 )
@@ -32,7 +33,9 @@ func (m Model) Render() {
 		for j, line := range table {
 			if j + 1 > maxHeight { break }
 
-			r := []rune(line)
+			nums := strconv.Itoa(j + buf.TopLine)
+			nums = strings.Repeat(" ", 4 - len(nums)) + nums
+			r := []rune(nums + " " + line)
 			if len(r) + 1 > bufWidth {
 				r = r[:bufWidth]
 			}
@@ -48,9 +51,9 @@ func (m Model) Render() {
 				if col + 1 > bufWidth { continue }
 
 				if m.Mode == ModeWrite {
-					m.Screen.SetContent(bufWidth * i + col, screenLine, ' ', nil, m.Style.Reverse(true))				
+					m.Screen.SetContent(bufWidth * i + col + 5, screenLine, ' ', nil, m.Style.Reverse(true))				
 				} else {
-					m.Screen.SetContent(bufWidth * i + col, screenLine, ' ', nil, m.Style.Reverse(true).Foreground(color.Gray))	
+					m.Screen.SetContent(bufWidth * i + col + 5, screenLine, ' ', nil, m.Style.Reverse(true).Foreground(color.Gray))	
 				}
 			}
 		}
