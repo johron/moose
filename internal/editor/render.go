@@ -3,7 +3,7 @@ package editor
 import (
 	"strings"
 	"moose/internal/buffer"
-	"github.com/gdamore/tcell/v3"
+	"github.com/gdamore/tcell/v3/color"
 )
 
 func (m Model) Render() {
@@ -27,15 +27,17 @@ func (m Model) Render() {
 			m.Screen.PutStrStyled(bufWidth*i, j, string(r), m.Style)
 		}
 
-		for _, cur := range buf.CM.Cursors {
-			line, col := buffer.LineCol(buf.Rope, cur.Offset)
-			if line + 1 > maxHeight { continue }
-			if col + 1 > bufWidth { continue }
+		if i == m.BM.CurrentIdx || m.Mode == ModePalette {
+			for _, cur := range buf.CM.Cursors {
+				line, col := buffer.LineCol(buf.Rope, cur.Offset)
+				if line + 1 > maxHeight { continue }
+				if col + 1 > bufWidth { continue }
 
-			if i == m.BM.CurrentIdx && m.Mode != ModePalette {
-				m.Screen.SetContent(bufWidth * i + col, line, ' ', nil, m.Style.Reverse(true))
-			} else {
-				m.Screen.SetContent(bufWidth * i + col, line, ' ', nil, m.Style.Reverse(true).Foreground(tcell.ColorGray))				
+				if m.Mode == ModeWrite {
+					m.Screen.SetContent(bufWidth * i + col, line, ' ', nil, m.Style.Reverse(true))				
+				} else {
+					m.Screen.SetContent(bufWidth * i + col, line, ' ', nil, m.Style.Reverse(true).Foreground(color.Gray))	
+				}
 			}
 		}
 	}
@@ -45,6 +47,14 @@ func (m Model) Render() {
 	}
 
 	modeStr := m.Mode.String()
+	if m.Mode == ModePalette {
+		if strings.HasPrefix(m.BM.PaletteBuffer.String(), "/") {
+			modeStr += " (cmd)"
+		} else if strings.HasPrefix(m.BM.PaletteBuffer.String(), "?") {
+			modeStr += " (find)"
+		}
+	}
+
 	m.Screen.PutStrStyled(sWidth - (len(modeStr) + 1), maxHeight, strings.ToUpper(modeStr), m.Style.Reverse(true))
 
 	if m.Mode == ModePalette {
@@ -57,7 +67,11 @@ func (m Model) Render() {
 
 			m.Screen.SetContent(col, maxHeight + 1, ' ', nil, m.Style.Reverse(true))
 		}
+	} else if strings.HasPrefix(m.BM.PaletteBuffer.String(), "moose.info:") {
+		m.Screen.PutStrStyled(0, maxHeight + 1, string([]rune(m.BM.PaletteBuffer.String())[11:]), m.Style.Foreground(color.LightGray))
+	} else if strings.HasPrefix(m.BM.PaletteBuffer.String(), "moose.warn:") {
+		m.Screen.PutStrStyled(0, maxHeight + 1, string([]rune(m.BM.PaletteBuffer.String())[11:]), m.Style.Foreground(color.Orange))
 	} else if strings.HasPrefix(m.BM.PaletteBuffer.String(), "moose.error:") {
-		m.Screen.PutStrStyled(0, maxHeight + 1, string([]rune(m.BM.PaletteBuffer.String())[12:]), m.Style.Foreground(tcell.ColorRed))
+		m.Screen.PutStrStyled(0, maxHeight + 1, string([]rune(m.BM.PaletteBuffer.String())[12:]), m.Style.Foreground(color.Red))
 	}
 }

@@ -3,14 +3,14 @@ package editor
 type Mode int
 const (
 	ModeNormal Mode = iota
-	ModeInsert
+	ModeWrite
 	ModePalette
 )
 
 func (mode Mode) String() string {
 	switch mode {
 	case ModeNormal:  return "normal"
-	case ModeInsert:  return "insert"
+	case ModeWrite:  return "write"
 	case ModePalette: return "palette"
 	}
 

@@ -5,6 +5,7 @@ import (
 	"os"
 	"moose/internal/editor"
 	"github.com/gdamore/tcell/v3"
+	"github.com/gdamore/tcell/v3/color"
 )
 
 func main() {
@@ -18,7 +19,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	style := tcell.StyleDefault.Background(tcell.ColorDefault).Foreground(tcell.ColorDefault)
+	style := tcell.StyleDefault.Background(color.Reset).Foreground(color.Reset)
 	s.SetStyle(style)
 
 	m := editor.NewModel(s, style)

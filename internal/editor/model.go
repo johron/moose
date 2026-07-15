@@ -34,7 +34,7 @@ func NewModel(screen tcell.Screen, style tcell.Style) Model {
 func (m *Model) CurrentActionSet() []Action {
 	switch m.Mode {
 	case ModeNormal:  return m.AM.Normal
-	case ModeInsert:  return m.AM.Insert
+	case ModeWrite:  return m.AM.Insert
 	case ModePalette: return m.AM.Palette
 	}
 

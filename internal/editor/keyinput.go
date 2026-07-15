@@ -8,7 +8,7 @@ import (
 func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
 	for _, action := range append(m.CurrentActionSet(), m.AM.Common...) {
 		if action.Binding != "" && strings.ToLower(ev.Name()) == strings.ToLower(action.Binding) {
-			if action.Command != "" && action.NeedsArgs == true {
+			if action.Command != "" && action.AskArgs == true {
 				m.Mode = ModePalette
 				m.BM.PaletteBuffer.Clear()
 				m.BM.PaletteBuffer.Paste("/" + action.Command)
@@ -20,7 +20,7 @@ func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
 		}
 	}
 
-	if m.Mode == ModeInsert {
+	if m.Mode == ModeWrite {
 		if ev.Key() == tcell.KeyRune {
 			for _, r := range ev.Str() {
 				m.BM.Current().Insert(r)
