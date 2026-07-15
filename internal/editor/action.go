@@ -113,6 +113,15 @@ func DefaultActionManager() ActionManager {
 					m.BM.PaletteBuffer.Insert('/')
 				},
 			},
+			Action{
+				Binding: "Rune[f]",
+				AskArgs: true,
+				Callback: func(m *Model, args []string) {
+					m.Mode = ModePalette
+					m.BM.PaletteBuffer.Clear()
+					m.BM.PaletteBuffer.Insert('?')
+				},
+			},
 		},
 		Insert:  []Action{
 			Action{
@@ -228,6 +237,10 @@ func DefaultActionManager() ActionManager {
 						m.Mode = ModeNormal
 						m.BM.PaletteBuffer.Clear()
 						m.BM.PaletteBuffer.Paste("moose.error:Unknown command \"" + cmd + "\"")
+					} else if strings.HasPrefix(args[0], "?") {
+						m.Mode = ModeFind
+						m.BM.PaletteBuffer.Clear()
+						m.BM.PaletteBuffer.Paste("moose.error:Find mode unimplemented \"" + cmd + "\"")
 					} else {
 						m.Mode = ModeNormal
 						m.BM.PaletteBuffer.Clear()

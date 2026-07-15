@@ -13,6 +13,8 @@ func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
 				m.BM.PaletteBuffer.Clear()
 				m.BM.PaletteBuffer.Paste("/" + action.Command)
 				return
+			} else if action.Command == "" && action.AskArgs == true {
+				m.Mode = ModePalette
 			}
 
 			action.Callback(m, []string{})
