@@ -43,7 +43,7 @@ func (m Model) Render() {
 			m.Screen.PutStrStyled(bufWidth*i, j, string(r), m.Style)
 		}
 
-		if i == m.BM.CurrentIdx || m.Mode == ModePalette {
+		if i == m.BM.CurrentIdx {
 			for _, cur := range buf.CM.Cursors {
 				line, col := buffer.LineCol(buf, cur.Offset)
 				screenLine := line - buf.TopLine
@@ -51,7 +51,7 @@ func (m Model) Render() {
 				if col + 1 > bufWidth { continue }
 
 				if m.Mode == ModeWrite {
-					m.Screen.SetContent(bufWidth * i + col + 5, screenLine, ' ', nil, m.Style.Reverse(true))				
+					m.Screen.SetContent(bufWidth * i + col + 5, screenLine, ' ', nil, m.Style.Reverse(true))
 				} else {
 					m.Screen.SetContent(bufWidth * i + col + 5, screenLine, ' ', nil, m.Style.Reverse(true).Foreground(color.Gray))	
 				}
