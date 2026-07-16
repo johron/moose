@@ -44,12 +44,12 @@ func (buf *Buffer) ensureRope() {
 	}
 }
 
-func (buf *Buffer) Insert(content rune) {
+func (buf *Buffer) Insert(content string) {
 	buf.ensureRope()
 	buf.CM.DeduplicateAndSort()
 
 	delta := 0
-	data := []byte(string(content))
+	data := []byte(content)
 	shift := len(data)
 
 	for i := range buf.CM.Cursors {
@@ -72,12 +72,6 @@ func (buf *Buffer) Insert(content rune) {
 		cur.Goal = goal
 
 		delta += shift
-	}
-}
-
-func (buf *Buffer) Paste(content string) {
-	for _, r := range content {
-		buf.Insert(r)
 	}
 }
 

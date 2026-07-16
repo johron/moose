@@ -11,7 +11,7 @@ func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
 			if action.Command != "" && action.AskArgs == true {
 				m.Mode = ModePalette
 				m.BM.PaletteBuffer.Clear()
-				m.BM.PaletteBuffer.Paste("/" + action.Command)
+				m.BM.PaletteBuffer.Insert("/" + action.Command + " ")
 				return
 			} else if action.Command == "" && action.AskArgs == true {
 				m.Mode = ModePalette
@@ -24,16 +24,12 @@ func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
 
 	if m.Mode == ModeWrite {
 		if ev.Key() == tcell.KeyRune {
-			for _, r := range ev.Str() {
-				m.BM.Current().Insert(r)
-			}
+			m.BM.Current().Insert(ev.Str())
 		}
 	}
 	if m.Mode == ModePalette {
 		if ev.Key() == tcell.KeyRune {
-			for _, r := range ev.Str() {
-				m.BM.PaletteBuffer.Insert(r)
-			}
+			m.BM.PaletteBuffer.Insert(ev.Str())
 		}
 	}
 }

@@ -104,11 +104,11 @@ func (m Model) Render() {
 	modeStr := m.Mode.String()
 	if m.Mode == ModePalette {
 		if strings.HasPrefix(m.BM.PaletteBuffer.String(), "/") {
-			modeStr = "command"
+			modeStr += " (command)"
 		} else if strings.HasPrefix(m.BM.PaletteBuffer.String(), "?") {
-			modeStr = "find"
+			modeStr += " (find)"
 		} else if strings.HasPrefix(m.BM.PaletteBuffer.String(), "=") {
-			modeStr = "replace"
+			modeStr += " (replace)"
 		}
 	}
 

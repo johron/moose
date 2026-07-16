@@ -67,14 +67,6 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 			Action{
-				Binding: "shift+ctrl+Rune[v]",
-				Command: "paste",
-				AskArgs: false,
-				Callback: func(m *Model, args []string) {
-					m.Screen.GetClipboard()
-				},
-			},
-			Action{
 				Binding: "ctrl+q",
 				Command: "q",
 				AskArgs: true,
@@ -92,7 +84,7 @@ func DefaultActionManager() ActionManager {
 						if m.BM.Current().Path == "" {
 							m.Mode = ModeNormal
 							m.BM.PaletteBuffer.Clear()
-							m.BM.PaletteBuffer.Paste("moose.error:Missing filename argument for save")
+							m.BM.PaletteBuffer.Insert("moose.error:Missing filename argument for save")
 							return
 						}
 					}
@@ -108,12 +100,12 @@ func DefaultActionManager() ActionManager {
 					if err != nil {
 						m.Mode = ModeNormal
 						m.BM.PaletteBuffer.Clear()
-						m.BM.PaletteBuffer.Paste("moose.error:Could not save to file \"" + path + "\": " + err.Error())
+						m.BM.PaletteBuffer.Insert("moose.error:Could not save to file \"" + path + "\": " + err.Error())
 						return
 					}
 
 					m.BM.PaletteBuffer.Clear()
-					m.BM.PaletteBuffer.Paste("moose.info:Wrote " + strconv.Itoa(len(data)) + " bytes to \"" + path + "\"")
+					m.BM.PaletteBuffer.Insert("moose.info:Wrote " + strconv.Itoa(len(data)) + " bytes to \"" + path + "\"")
 					return
 				},
 			},
@@ -123,14 +115,14 @@ func DefaultActionManager() ActionManager {
 				AskArgs: true,
 			},
 			Action{
-				Binding: "ctrl+Rune[e]",
+				Binding: "ctrl+e",
 				Command: "e",
 				AskArgs: true,
 				Callback: func(m *Model, args []string) {
 					if len(args) < 1 {
 						m.Mode = ModeNormal
 						m.BM.PaletteBuffer.Clear()
-						m.BM.PaletteBuffer.Paste("moose.error:Did not specify path for edit")
+						m.BM.PaletteBuffer.Insert("moose.error:Did not specify path for edit")
 						return
 					}
 
@@ -138,7 +130,7 @@ func DefaultActionManager() ActionManager {
 					if err != nil {
 						m.Mode = ModeNormal
 						m.BM.PaletteBuffer.Clear()
-						m.BM.PaletteBuffer.Paste("moose.error:Could not edit file \"" + args[0] + "\": " + err.Error())
+						m.BM.PaletteBuffer.Insert("moose.error:Could not edit file \"" + args[0] + "\": " + err.Error())
 						return
 					}
 
@@ -161,7 +153,7 @@ func DefaultActionManager() ActionManager {
 				Callback: func(m *Model, args []string) {
 					m.Mode = ModePalette
 					m.BM.PaletteBuffer.Clear()
-					m.BM.PaletteBuffer.Insert('/')
+					m.BM.PaletteBuffer.Insert("/")
 				},
 			},
 			Action{
@@ -170,7 +162,7 @@ func DefaultActionManager() ActionManager {
 				Callback: func(m *Model, args []string) {
 					m.Mode = ModePalette
 					m.BM.PaletteBuffer.Clear()
-					m.BM.PaletteBuffer.Insert('?')
+					m.BM.PaletteBuffer.Insert("?")
 				},
 			},
 		},
@@ -196,7 +188,7 @@ func DefaultActionManager() ActionManager {
 				Command: "TODO:",
 				AskArgs: false,
 				Callback: func(m *Model, args []string) {
-					m.BM.Current().ClearCursors()
+					m.BM.Current().Insert("test")
 				},
 			},
 			Action{
@@ -205,7 +197,7 @@ func DefaultActionManager() ActionManager {
 				AskArgs: false,
 				Callback: func(m *Model, args []string) {
 					for _ = range 4 {
-						m.BM.Current().Insert(' ')
+						m.BM.Current().Insert(" ")
 					}
 				},
 			},
@@ -227,7 +219,7 @@ func DefaultActionManager() ActionManager {
 			Action{
 				Binding: "enter",
 				Callback: func(m *Model, args []string) {
-					m.BM.Current().Insert('\n')
+					m.BM.Current().Insert("\n")
 				},
 			},
 		},
@@ -263,15 +255,15 @@ func DefaultActionManager() ActionManager {
 
 						m.Mode = ModeNormal
 						m.BM.PaletteBuffer.Clear()
-						m.BM.PaletteBuffer.Paste("moose.error:Unknown command \"" + cmd + "\"")
+						m.BM.PaletteBuffer.Insert("moose.error:Unknown command \"" + cmd + "\"")
 					} else if strings.HasPrefix(args[0], "?") {
 						m.Mode = ModeFind
 						m.BM.PaletteBuffer.Clear()
-						m.BM.PaletteBuffer.Paste("moose.error:Find mode unimplemented \"" + cmd + "\"")
+						m.BM.PaletteBuffer.Insert("moose.error:Find mode unimplemented \"" + cmd + "\"")
 					} else {
 						m.Mode = ModeNormal
 						m.BM.PaletteBuffer.Clear()
-						m.BM.PaletteBuffer.Paste("moose.error:Unknown palette input \"" + cmd + "\"")
+						m.BM.PaletteBuffer.Insert("moose.error:Unknown palette input \"" + cmd + "\"")
 					}
 				},
 			},

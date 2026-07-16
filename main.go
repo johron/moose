@@ -19,13 +19,14 @@ func main() {
 		os.Exit(1)
 	}
 
+
 	style := tcell.StyleDefault.Background(color.Reset).Foreground(color.Reset)
 	s.SetStyle(style)
 
 	m := editor.NewModel(s, style)
 
 	s.EnableMouse()
-	s.DisablePaste()
+	s.EnablePaste()
 	s.Clear()
 
 	quit := func() {
@@ -37,9 +38,14 @@ func main() {
 	}
 	defer quit()
 
-	for {
-		s.Clear()
+	isPasting := false
+	pasteBuffer := ""
 
+	s.Clear()
+	m.Render()
+	s.Show()
+
+	for {
 		if m.ShouldQuit {
 			return
 		}
@@ -49,14 +55,36 @@ func main() {
 		switch ev := ev.(type) {
 		case *tcell.EventResize:
 			s.Sync()
-		case *tcell.EventClipboard:
-			m.BM.Current().Paste(string(ev.Data()))
+		case *tcell.EventPaste:
+			if ev.Start() {
+				isPasting = true
+				pasteBuffer = "" 
+			} else if ev.End() {
+				isPasting = false
+				m.BM.Current().Insert(pasteBuffer)
+				
+				s.Clear()
+				m.Render()
+				s.Show()
+			}
+
 		case *tcell.EventKey:
-			m.HandleKeyInput(ev)
+			if isPasting {
+				if ev.Key() == tcell.KeyEnter || ev.Key() == tcell.KeyCtrlJ {
+					pasteBuffer += "\n"
+				} else if ev.Key() == tcell.KeyTab {
+					pasteBuffer += "\t"
+				} else if ev.Key() == tcell.KeyRune {
+					pasteBuffer += ev.Str()
+				}
+			} else {
+				m.HandleKeyInput(ev)
+				
+				s.Clear()
+				m.Render()
+				s.Show()
+			}
 		}
-
-		m.Render()
-
-		s.Show()
 	}
+
 }
