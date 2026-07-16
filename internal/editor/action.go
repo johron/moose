@@ -33,13 +33,37 @@ func DefaultActionManager() ActionManager {
 			Action{
 				Binding: "left",
 				Callback: func(m *Model, args []string) {
-					m.BM.Current().MoveHoriz(-1)	
+					if m.Mode == ModePalette {
+						m.BM.PaletteBuffer.MoveHoriz(-1)
+					} else {
+						m.BM.Current().MoveHoriz(-1)
+					}
 				},
 			},
 			Action{
 				Binding: "right",
 				Callback: func(m *Model, args []string) {
-					m.BM.Current().MoveHoriz(1)
+					if m.Mode == ModePalette {
+						m.BM.PaletteBuffer.MoveHoriz(1)					
+					} else {
+						m.BM.Current().MoveHoriz(1)
+					}
+				},
+			},
+			Action{
+				Binding: "up",
+				Callback: func(m *Model, args []string) {
+					if m.Mode != ModePalette {
+						m.BM.Current().MoveVert(-1)
+					}
+				},
+			},
+			Action{
+				Binding: "down",
+				Callback: func(m *Model, args []string) {
+					if m.Mode != ModePalette {
+						m.BM.Current().MoveVert(1)
+					}
 				},
 			},
 			Action{
@@ -121,6 +145,7 @@ func DefaultActionManager() ActionManager {
 					m.BM.Current().Clear()
 					m.BM.Current().Rope = rope.New(content)
 					m.BM.Current().LI.Rebuild(m.BM.Current().Rope)
+					m.BM.Current().Path = args[0]
 				},
 			},
 		},
@@ -150,18 +175,6 @@ func DefaultActionManager() ActionManager {
 			},
 		},
 		Insert:  []Action{
-			Action{
-				Binding: "up",
-				Callback: func(m *Model, args []string) {
-					m.BM.Current().MoveVert(-1)
-				},
-			},
-			Action{
-				Binding: "down",
-				Callback: func(m *Model, args []string) {
-					m.BM.Current().MoveVert(1)
-				},
-			},
 			Action{
 				Binding: "shift+up",
 				Command: "TODO:",
@@ -223,18 +236,6 @@ func DefaultActionManager() ActionManager {
 				Binding: "backspace",
 				Callback: func(m *Model, args []string) {
 					m.BM.PaletteBuffer.Delete()
-				},
-			},
-			Action{
-				Binding: "left",
-				Callback: func(m *Model, args []string) {
-					m.BM.PaletteBuffer.MoveHoriz(-1)
-				},
-			},
-			Action{
-				Binding: "right",
-				Callback: func(m *Model, args []string) {
-					m.BM.PaletteBuffer.MoveHoriz(1)
 				},
 			},
 			Action{
