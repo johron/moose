@@ -18,32 +18,59 @@ type ActionManager = struct {
 }
 
 type Action = struct {
-	Binding  []string
-	Command   []string
+	Bindings  []Binding
+	Commands  []string
 	AskArgs   bool
 	Callback  func(*Model, []string)
 }
+
+type Binding = struct {
+	Type   BindingType
+	Single string
+	Chord  []string
+}
+
+type BindingType int
+const (
+	BindingSingle BindingType = iota
+	BindingChord
+)
 
 func DefaultActionManager() ActionManager {
 	return ActionManager{
 		Common:  []Action{
 			Action{
-				Binding: []string{"f12"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "f12",
+					},
+				},
 				Callback: func(m *Model, args []string) {
 					m.Mode = ModeNormal
 				},
 			},
 			Action{
-				Binding: []string{"ctrl+q"},
-				Command: []string{"q", "quit"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "ctrl+q",
+					},
+				},
+				Commands: []string{"q", "quit"},
 				AskArgs: true,
 				Callback: func(m *Model, args []string) {
 					m.Quit()
 				},
 			},
 			Action{
-				Binding: []string{"ctrl+s"},
-				Command: []string{"s", "save"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "ctrl+s",
+					},
+				},
+				Commands: []string{"s", "save"},
 				AskArgs: false,
 				Callback: func(m *Model, args []string) {
 					path := ""
@@ -77,13 +104,23 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 			Action{
-				Binding: []string{"shift+ctrl+Rune[s]"},
-				Command: []string{"s", "save"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "ctrl+shift+s",
+					},
+				},
+				Commands: []string{"s", "save"},
 				AskArgs: true,
 			},
 			Action{
-				Binding: []string{"ctrl+e"},
-				Command: []string{"e", "edit"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "ctrl+e",
+					},
+				},
+				Commands: []string{"e", "edit"},
 				AskArgs: true,
 				Callback: func(m *Model, args []string) {
 					if len(args) < 1 {
@@ -108,7 +145,12 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 			Action{
-				Binding: []string{"left"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "left",
+					},
+				},
 				Callback: func(m *Model, args []string) {
 					if m.Mode == ModePalette {
 						m.BM.PaletteBuffer.MoveHoriz(-1)
@@ -118,7 +160,12 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 			Action{
-				Binding: []string{"right"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "right",
+					},
+				},
 				Callback: func(m *Model, args []string) {
 					if m.Mode == ModePalette {
 						m.BM.PaletteBuffer.MoveHoriz(1)					
@@ -128,7 +175,12 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 			Action{
-				Binding: []string{"up"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "up",
+					},
+				},
 				Callback: func(m *Model, args []string) {
 					if m.Mode != ModePalette {
 						m.BM.Current().MoveVert(-1)
@@ -136,7 +188,12 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 			Action{
-				Binding: []string{"down"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "down",
+					},
+				},
 				Callback: func(m *Model, args []string) {
 					if m.Mode != ModePalette {
 						m.BM.Current().MoveVert(1)
@@ -144,7 +201,12 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 			Action{
-				Binding: []string{"shift+left"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "shift+left",
+					},
+				},
 				AskArgs: false,
 				Callback: func(m *Model, args []string) {
 					if m.Mode == ModePalette {
@@ -155,7 +217,12 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 			Action{
-				Binding: []string{"shift+right"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "shift+right",
+					},
+				},
 				AskArgs: false,
 				Callback: func(m *Model, args []string) {
 					if m.Mode == ModePalette {
@@ -168,13 +235,23 @@ func DefaultActionManager() ActionManager {
 		},
 		Normal:  []Action{
 			Action{
-				Binding: []string{"Rune[w]"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "w",
+					},
+				},
 				Callback: func(m *Model, args []string) {
 					m.Mode = ModeWrite
 				},
 			},
 			Action{
-				Binding: []string{"Rune[q]"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "q",
+					},
+				},
 				Callback: func(m *Model, args []string) {
 					m.Mode = ModePalette
 					m.BM.PaletteBuffer.Clear()
@@ -182,7 +259,12 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 			Action{
-				Binding: []string{"Rune[f]"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "f",
+					},
+				},
 				AskArgs: true,
 				Callback: func(m *Model, args []string) {
 					m.Mode = ModePalette
@@ -191,8 +273,13 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 			Action{
-				Binding: []string{"Rune[v]"},
-				Command: []string{"p", "paste"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "v",
+					},
+				},
+				Commands: []string{"p", "paste"},
 				AskArgs: false,
 				Callback: func(m *Model, args []string) {
 					text := clipboard.Read(clipboard.FmtText)
@@ -207,7 +294,12 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 			Action{
-				Binding: []string{"Rune[j]"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "j",
+					},
+				},
 				Callback: func(m *Model, args []string) {
 					if m.Mode == ModePalette {
 						m.BM.PaletteBuffer.MoveHoriz(-1)
@@ -219,32 +311,52 @@ func DefaultActionManager() ActionManager {
 		},
 		Insert:  []Action{
 			Action{
-				Binding: []string{"shift+up"},
-				Command: []string{"TODO:"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "shift+up",
+					},
+				},
+				Commands: []string{"TODO:"},
 				AskArgs: false,
 				Callback: func(m *Model, args []string) {
 					m.BM.Current().AddCursorVert(-1)
 				},
 			},
 			Action{
-				Binding: []string{"shift+down"},
-				Command: []string{"TODO:"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "shift+down",
+					},
+				},
+				Commands: []string{"TODO:"},
 				AskArgs: false,
 				Callback: func(m *Model, args []string) {
 					m.BM.Current().AddCursorVert(1)
 				},
 			},
 			Action{
-				Binding: []string{"esc"},
-				Command: []string{"clrc", "clearcursors"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "esc",
+					},
+				},
+				Commands: []string{"clrc", "clearcursors"},
 				AskArgs: false,
 				Callback: func(m *Model, args []string) {
 					m.BM.Current().ClearCursors()
 				},
 			},
 			Action{
-				Binding: []string{"tab"},
-				Command: []string{"TODO:"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "tab",
+					},
+				},
+				Commands: []string{"TODO:"},
 				AskArgs: false,
 				Callback: func(m *Model, args []string) {
 					for _ = range 4 {
@@ -253,8 +365,13 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 			Action{
-				Binding: []string{"shift+tab"},
-				Command: []string{"TODO:"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "shift+tab",
+					},
+				},
+				Commands: []string{"TODO:"},
 				AskArgs: false,
 				Callback: func(m *Model, args []string) {
 					// TODO: implement m.BM.Current().remove...
@@ -262,13 +379,23 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 			Action{
-				Binding: []string{"backspace"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "backspace",
+					},
+				},
 				Callback: func(m *Model, args []string) {
 					m.BM.Current().Delete()
 				},
 			},
 			Action{
-				Binding: []string{"enter"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "enter",
+					},
+				},
 				Callback: func(m *Model, args []string) {
 					m.BM.Current().Insert("\n")
 				},
@@ -276,13 +403,23 @@ func DefaultActionManager() ActionManager {
 		},
 		Palette: []Action{
 			Action{
-				Binding: []string{"backspace"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "backspace",
+					},
+				},
 				Callback: func(m *Model, args []string) {
 					m.BM.PaletteBuffer.Delete()
 				},
 			},
 			Action{
-				Binding: []string{"enter"},
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "enter",
+					},
+				},
 				Callback: func(m *Model, _ []string) {
 					input := m.BM.PaletteBuffer.String()
 					args := strings.Split(input, " ")
