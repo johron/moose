@@ -2,6 +2,7 @@ package buffer
 
 import (
 	"slices"
+	"unicode"
 	"unicode/utf8"
 	"github.com/zyedidia/rope"
 )
@@ -137,6 +138,69 @@ func (buf *Buffer) Clear() {
 	buf.LI = NewLineIndex()
 }
 
+func isWordRune(r rune) bool {
+	return unicode.IsLetter(r) || unicode.IsDigit(r) || r == '_'
+}
+
+func (buf *Buffer) MoveWordHoriz(dir int) {
+	buf.ensureRope()
+
+	for i := range buf.CM.Cursors {
+		cur := &buf.CM.Cursors[i]
+		pos := normalizeOffset(buf.Rope, cur.Offset)
+
+		switch {
+		case dir > 0:
+			for pos < buf.Rope.Len() {
+				r, size := utf8.DecodeRune(buf.Rope.Slice(pos, buf.Rope.Len()))
+				if size <= 0 {
+					size = 1
+				}
+				if !isWordRune(r) {
+					break
+				}
+				pos += size
+			}
+
+			for pos < buf.Rope.Len() {
+				r, size := utf8.DecodeRune(buf.Rope.Slice(pos, buf.Rope.Len()))
+				if size <= 0 {
+					size = 1
+				}
+				if isWordRune(r) {
+					break
+				}
+				pos += size
+			}
+
+		case dir < 0:
+			for pos > 0 {
+				start := prevRuneStart(buf.Rope, pos)
+				r, _ := utf8.DecodeRune(buf.Rope.Slice(start, pos))
+				if isWordRune(r) {
+					break
+				}
+				pos = start
+			}
+
+			for pos > 0 {
+				start := prevRuneStart(buf.Rope, pos)
+				r, _ := utf8.DecodeRune(buf.Rope.Slice(start, pos))
+				if !isWordRune(r) {
+					break
+				}
+				pos = start
+			}
+		}
+
+		cur.Offset = pos
+		_, goal := LineCol(buf, cur.Offset)
+		cur.Goal = goal
+	}
+
+	buf.CM.DeduplicateAndSort()
+}
+
 func (buf *Buffer) MoveHoriz(dir int) {
 	buf.ensureRope()
 
@@ -197,14 +261,8 @@ func (buf *Buffer) AddCursorVert(dir int) {
 			continue
 		}
 
-		lineStart := OffsetForLine(buf, targetLine)
-		lineEnd := lineContentEnd(buf, targetLine)
-		lineLen := runeCount(buf.Rope, lineStart, lineEnd)
 
-		goal := cur.Goal
-		if goal > lineLen {
-			goal = lineLen
-		}
+		goal := buf.CM.Cursors[buf.CM.PrimaryIdx].Goal
 
 		newCursors = append(newCursors, Cursor{
 			Offset: OffsetForLineCol(buf, targetLine, goal),

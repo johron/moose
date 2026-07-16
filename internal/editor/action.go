@@ -3,9 +3,11 @@ package editor
 import(
 	"strings"
 	"strconv"
+	"slices"
 	"os"
 	"github.com/zyedidia/rope"
 	"golang.design/x/clipboard"
+	"moose/internal/util"
 )
 
 type ActionManager = struct {
@@ -16,9 +18,9 @@ type ActionManager = struct {
 }
 
 type Action = struct {
-	Binding   string
-	Command   string
-	AskArgs bool
+	Binding  []string
+	Command   []string
+	AskArgs   bool
 	Callback  func(*Model, []string)
 }
 
@@ -26,58 +28,22 @@ func DefaultActionManager() ActionManager {
 	return ActionManager{
 		Common:  []Action{
 			Action{
-				Binding: "f12",
+				Binding: []string{"f12"},
 				Callback: func(m *Model, args []string) {
 					m.Mode = ModeNormal
 				},
 			},
 			Action{
-				Binding: "left",
-				Callback: func(m *Model, args []string) {
-					if m.Mode == ModePalette {
-						m.BM.PaletteBuffer.MoveHoriz(-1)
-					} else {
-						m.BM.Current().MoveHoriz(-1)
-					}
-				},
-			},
-			Action{
-				Binding: "right",
-				Callback: func(m *Model, args []string) {
-					if m.Mode == ModePalette {
-						m.BM.PaletteBuffer.MoveHoriz(1)					
-					} else {
-						m.BM.Current().MoveHoriz(1)
-					}
-				},
-			},
-			Action{
-				Binding: "up",
-				Callback: func(m *Model, args []string) {
-					if m.Mode != ModePalette {
-						m.BM.Current().MoveVert(-1)
-					}
-				},
-			},
-			Action{
-				Binding: "down",
-				Callback: func(m *Model, args []string) {
-					if m.Mode != ModePalette {
-						m.BM.Current().MoveVert(1)
-					}
-				},
-			},
-			Action{
-				Binding: "ctrl+q",
-				Command: "q",
+				Binding: []string{"ctrl+q"},
+				Command: []string{"q", "quit"},
 				AskArgs: true,
 				Callback: func(m *Model, args []string) {
 					m.Quit()
 				},
 			},
 			Action{
-				Binding: "ctrl+s",
-				Command: "s",
+				Binding: []string{"ctrl+s"},
+				Command: []string{"s", "save"},
 				AskArgs: false,
 				Callback: func(m *Model, args []string) {
 					path := ""
@@ -111,13 +77,13 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 			Action{
-				Binding: "shift+ctrl+Rune[s]",
-				Command: "s",
+				Binding: []string{"shift+ctrl+Rune[s]"},
+				Command: []string{"s", "save"},
 				AskArgs: true,
 			},
 			Action{
-				Binding: "ctrl+e",
-				Command: "e",
+				Binding: []string{"ctrl+e"},
+				Command: []string{"e", "edit"},
 				AskArgs: true,
 				Callback: func(m *Model, args []string) {
 					if len(args) < 1 {
@@ -141,16 +107,74 @@ func DefaultActionManager() ActionManager {
 					m.BM.Current().Path = args[0]
 				},
 			},
+			Action{
+				Binding: []string{"left"},
+				Callback: func(m *Model, args []string) {
+					if m.Mode == ModePalette {
+						m.BM.PaletteBuffer.MoveHoriz(-1)
+					} else {
+						m.BM.Current().MoveHoriz(-1)
+					}
+				},
+			},
+			Action{
+				Binding: []string{"right"},
+				Callback: func(m *Model, args []string) {
+					if m.Mode == ModePalette {
+						m.BM.PaletteBuffer.MoveHoriz(1)					
+					} else {
+						m.BM.Current().MoveHoriz(1)
+					}
+				},
+			},
+			Action{
+				Binding: []string{"up"},
+				Callback: func(m *Model, args []string) {
+					if m.Mode != ModePalette {
+						m.BM.Current().MoveVert(-1)
+					}
+				},
+			},
+			Action{
+				Binding: []string{"down"},
+				Callback: func(m *Model, args []string) {
+					if m.Mode != ModePalette {
+						m.BM.Current().MoveVert(1)
+					}
+				},
+			},
+			Action{
+				Binding: []string{"shift+left"},
+				AskArgs: false,
+				Callback: func(m *Model, args []string) {
+					if m.Mode == ModePalette {
+						m.BM.PaletteBuffer.MoveWordHoriz(-1)
+					} else {
+						m.BM.Current().MoveWordHoriz(-1)
+					}
+				},
+			},
+			Action{
+				Binding: []string{"shift+right"},
+				AskArgs: false,
+				Callback: func(m *Model, args []string) {
+					if m.Mode == ModePalette {
+						m.BM.PaletteBuffer.MoveWordHoriz(1)
+					} else {
+						m.BM.Current().MoveWordHoriz(1)
+					}
+				},
+			},
 		},
 		Normal:  []Action{
 			Action{
-				Binding: "Rune[w]",
+				Binding: []string{"Rune[w]"},
 				Callback: func(m *Model, args []string) {
 					m.Mode = ModeWrite
 				},
 			},
 			Action{
-				Binding: "Rune[q]",
+				Binding: []string{"Rune[q]"},
 				Callback: func(m *Model, args []string) {
 					m.Mode = ModePalette
 					m.BM.PaletteBuffer.Clear()
@@ -158,7 +182,7 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 			Action{
-				Binding: "Rune[f]",
+				Binding: []string{"Rune[f]"},
 				AskArgs: true,
 				Callback: func(m *Model, args []string) {
 					m.Mode = ModePalette
@@ -167,46 +191,60 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 			Action{
-				Binding: "Rune[v]",
-				Command: "paste",
+				Binding: []string{"Rune[v]"},
+				Command: []string{"p", "paste"},
 				AskArgs: false,
 				Callback: func(m *Model, args []string) {
 					text := clipboard.Read(clipboard.FmtText)
 
 					if string(text) != "" {
-						m.BM.Current().Insert(string(text))
+						if m.Mode == ModePalette {
+							m.BM.PaletteBuffer.Insert(string(text))
+						} else {
+							m.BM.Current().Insert(string(text))
+						}
+					}
+				},
+			},
+			Action{
+				Binding: []string{"Rune[j]"},
+				Callback: func(m *Model, args []string) {
+					if m.Mode == ModePalette {
+						m.BM.PaletteBuffer.MoveHoriz(-1)
+					} else {
+						m.BM.Current().MoveHoriz(-1)
 					}
 				},
 			},
 		},
 		Insert:  []Action{
 			Action{
-				Binding: "shift+up",
-				Command: "TODO:",
+				Binding: []string{"shift+up"},
+				Command: []string{"TODO:"},
 				AskArgs: false,
 				Callback: func(m *Model, args []string) {
 					m.BM.Current().AddCursorVert(-1)
 				},
 			},
 			Action{
-				Binding: "shift+down",
-				Command: "TODO:",
+				Binding: []string{"shift+down"},
+				Command: []string{"TODO:"},
 				AskArgs: false,
 				Callback: func(m *Model, args []string) {
 					m.BM.Current().AddCursorVert(1)
 				},
 			},
 			Action{
-				Binding: "esc",
-				Command: "TODO:",
+				Binding: []string{"esc"},
+				Command: []string{"clrc", "clearcursors"},
 				AskArgs: false,
 				Callback: func(m *Model, args []string) {
-					m.BM.Current().Insert("test")
+					m.BM.Current().ClearCursors()
 				},
 			},
 			Action{
-				Binding: "tab",
-				Command: "TODO:",
+				Binding: []string{"tab"},
+				Command: []string{"TODO:"},
 				AskArgs: false,
 				Callback: func(m *Model, args []string) {
 					for _ = range 4 {
@@ -215,8 +253,8 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 			Action{
-				Binding: "shift+tab",
-				Command: "TODO:",
+				Binding: []string{"shift+tab"},
+				Command: []string{"TODO:"},
 				AskArgs: false,
 				Callback: func(m *Model, args []string) {
 					// TODO: implement m.BM.Current().remove...
@@ -224,13 +262,13 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 			Action{
-				Binding: "backspace",
+				Binding: []string{"backspace"},
 				Callback: func(m *Model, args []string) {
 					m.BM.Current().Delete()
 				},
 			},
 			Action{
-				Binding: "enter",
+				Binding: []string{"enter"},
 				Callback: func(m *Model, args []string) {
 					m.BM.Current().Insert("\n")
 				},
@@ -238,13 +276,13 @@ func DefaultActionManager() ActionManager {
 		},
 		Palette: []Action{
 			Action{
-				Binding: "backspace",
+				Binding: []string{"backspace"},
 				Callback: func(m *Model, args []string) {
 					m.BM.PaletteBuffer.Delete()
 				},
 			},
 			Action{
-				Binding: "enter",
+				Binding: []string{"enter"},
 				Callback: func(m *Model, _ []string) {
 					input := m.BM.PaletteBuffer.String()
 					args := strings.Split(input, " ")
@@ -259,7 +297,7 @@ func DefaultActionManager() ActionManager {
 						for _, action := range append(m.AM.Common, append(m.AM.Normal, m.AM.Insert...)...) {
 							if action.Callback == nil { continue }
 
-							if action.Command != "" && cmd == action.Command {
+							if len(action.Command) > 0 &&  slices.Contains(util.StandardizeBindingsArray(action.Command), util.StandardizeBinding(cmd)) {
 								m.Mode = ModeNormal
 								action.Callback(m, args[1:])
 								return

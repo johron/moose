@@ -65,7 +65,6 @@ func main() {
 			} else if ev.End() {
 				isPasting = false
 			}
-
 		case *tcell.EventKey:
 			if !isPasting {
 				m.HandleKeyInput(ev)
