@@ -5,6 +5,7 @@ import(
 	"strconv"
 	"os"
 	"github.com/zyedidia/rope"
+	"golang.design/x/clipboard"
 )
 
 type ActionManager = struct {
@@ -163,6 +164,18 @@ func DefaultActionManager() ActionManager {
 					m.Mode = ModePalette
 					m.BM.PaletteBuffer.Clear()
 					m.BM.PaletteBuffer.Insert("?")
+				},
+			},
+			Action{
+				Binding: "Rune[v]",
+				Command: "paste",
+				AskArgs: false,
+				Callback: func(m *Model, args []string) {
+					text := clipboard.Read(clipboard.FmtText)
+
+					if string(text) != "" {
+						m.BM.Current().Insert(string(text))
+					}
 				},
 			},
 		},

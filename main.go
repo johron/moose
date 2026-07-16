@@ -6,6 +6,7 @@ import (
 	"moose/internal/editor"
 	"github.com/gdamore/tcell/v3"
 	"github.com/gdamore/tcell/v3/color"
+	"golang.design/x/clipboard"
 )
 
 func main() {
@@ -19,6 +20,10 @@ func main() {
 		os.Exit(1)
 	}
 
+	err = clipboard.Init()
+	if err != nil {
+		panic(err)
+	}
 
 	style := tcell.StyleDefault.Background(color.Reset).Foreground(color.Reset)
 	s.SetStyle(style)
@@ -39,7 +44,6 @@ func main() {
 	defer quit()
 
 	isPasting := false
-	pasteBuffer := ""
 
 	s.Clear()
 	m.Render()
@@ -58,26 +62,12 @@ func main() {
 		case *tcell.EventPaste:
 			if ev.Start() {
 				isPasting = true
-				pasteBuffer = "" 
 			} else if ev.End() {
 				isPasting = false
-				m.BM.Current().Insert(pasteBuffer)
-				
-				s.Clear()
-				m.Render()
-				s.Show()
 			}
 
 		case *tcell.EventKey:
-			if isPasting {
-				if ev.Key() == tcell.KeyEnter || ev.Key() == tcell.KeyCtrlJ {
-					pasteBuffer += "\n"
-				} else if ev.Key() == tcell.KeyTab {
-					pasteBuffer += "\t"
-				} else if ev.Key() == tcell.KeyRune {
-					pasteBuffer += ev.Str()
-				}
-			} else {
+			if !isPasting {
 				m.HandleKeyInput(ev)
 				
 				s.Clear()
