@@ -4,6 +4,7 @@ import(
 	"strings"
 	"strconv"
 	"os"
+	"github.com/zyedidia/rope"
 )
 
 type ActionManager = struct {
@@ -96,6 +97,31 @@ func DefaultActionManager() ActionManager {
 				Binding: "shift+ctrl+Rune[s]",
 				Command: "s",
 				AskArgs: true,
+			},
+			Action{
+				Binding: "ctrl+Rune[e]",
+				Command: "e",
+				AskArgs: true,
+				Callback: func(m *Model, args []string) {
+					if len(args) < 1 {
+						m.Mode = ModeNormal
+						m.BM.PaletteBuffer.Clear()
+						m.BM.PaletteBuffer.Paste("moose.error:Did not specify path for edit")
+						return
+					}
+
+					content, err := os.ReadFile(args[0])
+					if err != nil {
+						m.Mode = ModeNormal
+						m.BM.PaletteBuffer.Clear()
+						m.BM.PaletteBuffer.Paste("moose.error:Could not edit file \"" + args[0] + "\": " + err.Error())
+						return
+					}
+
+					m.BM.Current().Clear()
+					m.BM.Current().Rope = rope.New(content)
+					m.BM.Current().LI.Rebuild(m.BM.Current().Rope)
+				},
 			},
 		},
 		Normal:  []Action{

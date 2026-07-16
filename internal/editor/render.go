@@ -2,10 +2,45 @@ package editor
 
 import (
 	"strings"
-	"strconv"
+	"fmt"
 	"moose/internal/buffer"
 	"github.com/gdamore/tcell/v3/color"
 )
+
+const tabWidth = 4
+
+func expandTabs(s string) string {
+	var b strings.Builder
+	col := 0
+	for _, r := range s {
+		if r == '\t' {
+			spaces := tabWidth - (col % tabWidth)
+			b.WriteString(strings.Repeat(" ", spaces))
+			col += spaces
+		} else {
+			b.WriteRune(r)
+			col++
+		}
+	}
+	return b.String()
+}
+
+func visualCol(lineText string, runeCol int) int {
+	col := 0
+	n := 0
+	for _, r := range lineText {
+		if n >= runeCol {
+			break
+		}
+		if r == '\t' {
+			col += tabWidth - (col % tabWidth)
+		} else {
+			col++
+		}
+		n++
+	}
+	return col
+}
 
 func (m Model) Render() {
 	sWidth, sHeight := m.Screen.Size()
@@ -33,9 +68,8 @@ func (m Model) Render() {
 		for j, line := range table {
 			if j + 1 > maxHeight { break }
 
-			nums := strconv.Itoa(j + buf.TopLine)
-			nums = strings.Repeat(" ", 4 - len(nums)) + nums
-			r := []rune(nums + " " + line)
+			nums := fmt.Sprintf("%4d ", j + buf.TopLine)
+			r := []rune(nums + expandTabs(line))
 			if len(r) + 1 > bufWidth {
 				r = r[:bufWidth]
 			}
@@ -48,19 +82,23 @@ func (m Model) Render() {
 				line, col := buffer.LineCol(buf, cur.Offset)
 				screenLine := line - buf.TopLine
 				if screenLine < 0 || screenLine + 1 > maxHeight { continue }
-				if col + 1 > bufWidth { continue }
+
+				visCol := visualCol(buffer.LineText(buf, line), col)
+				if visCol + 1 > bufWidth { continue }
+
+				ch := buffer.RuneAt(buf, cur.Offset)
 
 				if m.Mode == ModeWrite {
-					m.Screen.SetContent(bufWidth * i + col + 5, screenLine, ' ', nil, m.Style.Reverse(true))
+					m.Screen.SetContent(bufWidth * i + visCol + 5, screenLine, ch, nil, m.Style.Reverse(true))
 				} else {
-					m.Screen.SetContent(bufWidth * i + col + 5, screenLine, ' ', nil, m.Style.Reverse(true).Foreground(color.Gray))	
+					m.Screen.SetContent(bufWidth * i + visCol + 5, screenLine, ch, nil, m.Style.Reverse(true).Foreground(color.Gray))	
 				}
 			}
 		}
 	}
 
 	for col := 0; col < sWidth; col++ {
-		m.Screen.SetContent(col, maxHeight, ' ', nil, m.Style.Reverse(true))
+		m.Screen.SetContent(col, maxHeight, ' ', nil, m.Style.Background(color.Black))
 	}
 
 	modeStr := m.Mode.String()
@@ -74,7 +112,7 @@ func (m Model) Render() {
 		}
 	}
 
-	m.Screen.PutStrStyled(sWidth - (len(modeStr) + 1), maxHeight, strings.ToUpper(modeStr), m.Style.Reverse(true))
+	m.Screen.PutStrStyled(sWidth - (len(modeStr) + 1), maxHeight, strings.ToUpper(modeStr), m.Style.Background(color.Black))
 
 	if m.Mode == ModePalette {
 		m.Screen.PutStrStyled(0, maxHeight + 1, m.BM.PaletteBuffer.String(), m.Style)
@@ -84,7 +122,9 @@ func (m Model) Render() {
 			if line + maxHeight != maxHeight { continue }
 			if col + 1 > sWidth { continue }
 
-			m.Screen.SetContent(col, maxHeight + 1, ' ', nil, m.Style.Reverse(true))
+			ch := buffer.RuneAt(&m.BM.PaletteBuffer, cur.Offset)
+
+			m.Screen.SetContent(col, maxHeight + 1, ch, nil, m.Style.Reverse(true))
 		}
 	} else if strings.HasPrefix(m.BM.PaletteBuffer.String(), "moose.info:") {
 		m.Screen.PutStrStyled(0, maxHeight + 1, string([]rune(m.BM.PaletteBuffer.String())[11:]), m.Style.Foreground(color.LightGray))

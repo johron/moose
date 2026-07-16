@@ -304,6 +304,16 @@ func OffsetForLineCol(buf *Buffer, line int, col int) int {
 	return i
 }
 
+func LineText(buf *Buffer, line int) string {
+	start := OffsetForLine(buf, line)
+	end := lineContentEnd(buf, line)
+	if end < start {
+		end = start
+	}
+
+	return string(buf.Rope.Slice(start, end))
+}
+
 func lineContentEnd(buf *Buffer, line int) int {
 	nextStart := OffsetForLine(buf, line+1)
 	if nextStart > 0 && nextStart <= buf.Rope.Len() && buf.Rope.At(nextStart-1) == '\n' {
@@ -378,6 +388,19 @@ func nextRuneEnd(r *rope.Node, offset int) int {
 	}
 
 	return end
+}
+
+func RuneAt(buf *Buffer, offset int) rune {
+	if buf.Rope == nil || offset < 0 || offset >= buf.Rope.Len() {
+		return ' '
+	}
+
+	r, size := utf8.DecodeRune(buf.Rope.Slice(offset, buf.Rope.Len()))
+	if size <= 0 || r == '\n' || r == '\t' {
+		return ' '
+	}
+
+	return r
 }
 
 func (buf Buffer) String() string {
