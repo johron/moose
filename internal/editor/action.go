@@ -7,6 +7,7 @@ import(
 	"os"
 	"github.com/zyedidia/rope"
 	"golang.design/x/clipboard"
+	"moose/internal/buffer"
 	"moose/internal/util"
 )
 
@@ -156,6 +157,7 @@ func DefaultActionManager() ActionManager {
 					m.BM.Current().Rope = rope.New(content)
 					m.BM.Current().LI.Rebuild(m.BM.Current().Rope)
 					m.BM.Current().Path = args[0]
+					m.BM.Current().History = buffer.UndoStack{}
 				},
 			},
 			Action{
@@ -248,6 +250,40 @@ func DefaultActionManager() ActionManager {
 			},
 		},
 		Normal:  []Action{
+			Action{
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "z",
+					},
+				},
+				Commands: []string{"u", "undo"},
+				AskArgs:  false,
+				Callback: func(m *Model, args []string) {
+					if m.Mode == ModePalette {
+						m.BM.PaletteBuffer.Undo()
+					} else {
+						m.BM.Current().Undo()
+					}
+				},
+			},
+			Action{
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "y",
+					},
+				},
+				Commands: []string{"r", "redo"},
+				AskArgs:  false,
+				Callback: func(m *Model, args []string) {
+					if m.Mode == ModePalette {
+						m.BM.PaletteBuffer.Redo()
+					} else {
+						m.BM.Current().Redo()
+					}
+				},
+			},
 			Action{
 				Bindings: []Binding{
 					Binding{

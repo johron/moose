@@ -23,6 +23,7 @@ type Buffer struct {
 	CM      CursorManager
 	Path    string
 	TopLine int
+	History UndoStack
 }
 
 func NewBuffer() Buffer {
@@ -49,9 +50,13 @@ func (buf *Buffer) Insert(content string) {
 	buf.ensureRope()
 	buf.CM.DeduplicateAndSort()
 
+	cursorsBefore, primaryBefore := buf.begin()
+
 	delta := 0
 	data := []byte(content)
 	shift := len(data)
+
+	edits := make([]Edit, 0, len(buf.CM.Cursors))
 
 	for i := range buf.CM.Cursors {
 		cur := &buf.CM.Cursors[i]
@@ -65,8 +70,9 @@ func (buf *Buffer) Insert(content string) {
 			pos = buf.Rope.Len()
 		}
 
-		buf.Rope.Insert(pos, data)
-		buf.LI.InsertAt(pos, data)
+		edit := Edit{Offset: pos, Inserted: data}
+		buf.apply(edit)
+		edits = append(edits, edit)
 
 		cur.Offset = pos + shift
 		_, goal := LineCol(buf, cur.Offset)
@@ -74,6 +80,8 @@ func (buf *Buffer) Insert(content string) {
 
 		delta += shift
 	}
+
+	buf.commit(cursorsBefore, primaryBefore, edits)
 }
 
 func (buf *Buffer) Delete() {
@@ -81,7 +89,10 @@ func (buf *Buffer) Delete() {
 
 	buf.CM.DeduplicateAndSort()
 
+	cursorsBefore, primaryBefore := buf.begin()
+
 	delta := 0
+	var edits []Edit
 
 	for i := range buf.CM.Cursors {
 		cur := &buf.CM.Cursors[i]
@@ -108,11 +119,12 @@ func (buf *Buffer) Delete() {
 			start = 0
 		}
 
-		buf.Rope.Remove(start, pos)
-		buf.LI.RemoveAt(start, pos)
+		deleted := append([]byte{}, buf.Rope.Slice(start, pos)...)
+		edit := Edit{Offset: start, Deleted: deleted}
+		buf.apply(edit)
+		edits = append(edits, edit)
 
-		deleted := pos - start
-		delta -= deleted
+		delta -= len(deleted)
 
 		cur.Offset = start
 		_, goal := LineCol(buf, cur.Offset)
@@ -120,6 +132,7 @@ func (buf *Buffer) Delete() {
 	}
 
 	buf.CM.DeduplicateAndSort()
+	buf.commit(cursorsBefore, primaryBefore, edits)
 }
 
 func (buf *Buffer) DeleteLine() {
@@ -129,6 +142,8 @@ func (buf *Buffer) DeleteLine() {
     if buf.Rope.Len() == 0 || len(buf.CM.Cursors) == 0 {
         return
     }
+
+    cursorsBefore, primaryBefore := buf.begin()
 
     primary := buf.CM.Cursors[buf.CM.PrimaryIdx]
     line, _ := LineCol(buf, primary.Offset)
@@ -146,8 +161,9 @@ func (buf *Buffer) DeleteLine() {
         return
     }
 
-    buf.Rope.Remove(start, end)
-    buf.LI.RemoveAt(start, end)
+    deleted := append([]byte{}, buf.Rope.Slice(start, end)...)
+    edit := Edit{Offset: start, Deleted: deleted}
+    buf.apply(edit)
 
     newLine := line
     if newLine >= LineCount(buf) {
@@ -164,10 +180,13 @@ func (buf *Buffer) DeleteLine() {
     }
 
     buf.CM.DeduplicateAndSort()
+    buf.commit(cursorsBefore, primaryBefore, []Edit{edit})
 }
 
 func (buf *Buffer) Clear() {
 	buf.ensureRope()
+
+	cursorsBefore, primaryBefore := buf.begin()
 
 	primaryCursor := &Cursor{
 		Offset: 0,
@@ -178,8 +197,15 @@ func (buf *Buffer) Clear() {
 	buf.CM.Cursors = append(buf.CM.Cursors, *primaryCursor)
 	buf.CM.PrimaryIdx = 0
 
-	buf.Rope.Remove(0, buf.Rope.Len())
-	buf.LI = NewLineIndex()
+	var edits []Edit
+	if buf.Rope.Len() > 0 {
+		deleted := append([]byte{}, buf.Rope.Value()...)
+		edit := Edit{Offset: 0, Deleted: deleted}
+		buf.apply(edit)
+		edits = append(edits, edit)
+	}
+
+	buf.commit(cursorsBefore, primaryBefore, edits)
 }
 
 func isWordRune(r rune) bool {
