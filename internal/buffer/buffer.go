@@ -122,6 +122,50 @@ func (buf *Buffer) Delete() {
 	buf.CM.DeduplicateAndSort()
 }
 
+func (buf *Buffer) DeleteLine() {
+    buf.ensureRope()
+    buf.CM.DeduplicateAndSort()
+
+    if buf.Rope.Len() == 0 || len(buf.CM.Cursors) == 0 {
+        return
+    }
+
+    primary := buf.CM.Cursors[buf.CM.PrimaryIdx]
+    line, _ := LineCol(buf, primary.Offset)
+
+    start := OffsetForLine(buf, line)
+    end := buf.Rope.Len()
+
+	if line+1 < LineCount(buf) {
+        end = OffsetForLine(buf, line+1)
+    } else if line > 0 && start > 0 && buf.Rope.At(start-1) == '\n' {
+        start--
+    }
+
+    if end <= start {
+        return
+    }
+
+    buf.Rope.Remove(start, end)
+    buf.LI.RemoveAt(start, end)
+
+    newLine := line
+    if newLine >= LineCount(buf) {
+        newLine = LineCount(buf) - 1
+    }
+    if newLine < 0 {
+        newLine = 0
+    }
+    newOffset := OffsetForLine(buf, newLine)
+
+    for i := range buf.CM.Cursors {
+        buf.CM.Cursors[i].Offset = newOffset
+        buf.CM.Cursors[i].Goal = 0
+    }
+
+    buf.CM.DeduplicateAndSort()
+}
+
 func (buf *Buffer) Clear() {
 	buf.ensureRope()
 

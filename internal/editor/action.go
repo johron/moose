@@ -256,9 +256,7 @@ func DefaultActionManager() ActionManager {
 					},
 				},
 				Callback: func(m *Model, args []string) {
-					m.BM.PaletteBuffer.Clear()
-					m.BM.PaletteBuffer.Insert("moose.error:TODO: line delete not implemented yet")
-					return
+					m.BM.Current().DeleteLine()
 				},
 			},
 			Action{

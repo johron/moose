@@ -8,6 +8,10 @@ import (
 func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
 	hasValidContinuingChordPath := false
 
+	// if m.Mode == ModeNormal && util.StandardizeBinding(ev.Name()) is numeric { // type number in normal mode to repeat a keybind x amount of times
+	// m.AM.NumericCM.Recording = true, .... along these lines
+	//}
+
 	for _, action := range append(m.CurrentActionSet(), m.AM.Common...) {
 		for _, binding := range action.Bindings {
 			switch binding.Type {
