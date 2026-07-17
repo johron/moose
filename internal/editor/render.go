@@ -2,6 +2,7 @@ package editor
 
 import (
 	"strings"
+	"strconv"
 	"fmt"
 	"moose/internal/buffer"
 	"github.com/gdamore/tcell/v3/color"
@@ -113,6 +114,9 @@ func (m Model) Render() {
 	}
 
 	m.Screen.PutStrStyled(sWidth - (len(modeStr) + 1), maxHeight, strings.ToUpper(modeStr), m.Style.Background(color.Black))
+	
+	logStr := m.DebugLog + ", " + strings.Join(m.AM.CM.Recorded, "+") + ", " + strconv.FormatBool(m.AM.CM.Recording)
+	m.Screen.PutStrStyled(1, maxHeight, logStr, m.Style.Background(color.Black))
 
 	if m.Mode == ModePalette {
 		m.Screen.PutStrStyled(0, maxHeight + 1, m.BM.PaletteBuffer.String(), m.Style)

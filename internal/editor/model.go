@@ -12,6 +12,7 @@ type Model struct {
 	BM		   buffer.BufferManager
 	AM         ActionManager
 	ShouldQuit bool
+	DebugLog   string
 }
 
 func NewModel(screen tcell.Screen, style tcell.Style) Model {
@@ -24,7 +25,7 @@ func NewModel(screen tcell.Screen, style tcell.Style) Model {
 			CurrentIdx:    0,
 			PaletteBuffer: buffer.NewBuffer(),
 		},
-		AM:       DefaultActionManager(),
+		AM:            DefaultActionManager(),
 		ShouldQuit:    false,
 	}
 

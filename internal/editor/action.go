@@ -15,6 +15,7 @@ type ActionManager = struct {
 	Normal  []Action
 	Insert  []Action
 	Palette []Action
+	CM		ChordManager
 }
 
 type Action = struct {
@@ -36,8 +37,21 @@ const (
 	BindingChord
 )
 
+type ChordManager = struct {
+	Recording   bool
+	Recorded    []string
+}
+
+func NewChordManager() ChordManager {
+	return ChordManager{
+		Recording: false,
+		Recorded:  []string{},
+	}
+}
+
 func DefaultActionManager() ActionManager {
 	return ActionManager{
+		CM:	     NewChordManager(),
 		Common:  []Action{
 			Action{
 				Bindings: []Binding{
@@ -234,6 +248,19 @@ func DefaultActionManager() ActionManager {
 			},
 		},
 		Normal:  []Action{
+			Action{
+				Bindings: []Binding{
+					Binding{
+						Type:  BindingChord,
+						Chord: []string{"d", "d"},
+					},
+				},
+				Callback: func(m *Model, args []string) {
+					m.BM.PaletteBuffer.Clear()
+					m.BM.PaletteBuffer.Insert("moose.error:TODO: line delete not implemented yet")
+					return
+				},
+			},
 			Action{
 				Bindings: []Binding{
 					Binding{
@@ -434,7 +461,7 @@ func DefaultActionManager() ActionManager {
 						for _, action := range append(m.AM.Common, append(m.AM.Normal, m.AM.Insert...)...) {
 							if action.Callback == nil { continue }
 
-							if len(action.Command) > 0 &&  slices.Contains(util.StandardizeBindingsArray(action.Command), util.StandardizeBinding(cmd)) {
+							if len(action.Commands) > 0 &&  slices.Contains(util.StandardizeBindingsArray(action.Commands), util.StandardizeBinding(cmd)) {
 								m.Mode = ModeNormal
 								action.Callback(m, args[1:])
 								return

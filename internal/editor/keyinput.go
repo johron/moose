@@ -1,24 +1,80 @@
 package editor
 
 import (
-	"slices"
 	"github.com/gdamore/tcell/v3"
 	"moose/internal/util"
 )
 
 func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
-	for _, action := range append(m.CurrentActionSet(), m.AM.Common...) {
-		if len(action.Binding) > 0 && slices.Contains(util.StandardizeBindingsArray(action.Binding), util.StandardizeBinding(ev.Name())) {
-			if action.AskArgs == true {
-				m.Mode = ModePalette
-				m.BM.PaletteBuffer.Clear()
-				m.BM.PaletteBuffer.Insert("/" + action.Command[0] + " ")
-				return
-			}
+	hasValidContinuingChordPath := false
 
-			action.Callback(m, []string{})
-			return
+	for _, action := range append(m.CurrentActionSet(), m.AM.Common...) {
+		for _, binding := range action.Bindings {
+			switch binding.Type {
+			case BindingSingle: 
+				if util.StandardizeBinding(binding.Single) == util.StandardizeBinding(ev.Name()) {
+					if len(action.Commands) > 0 && action.AskArgs == true {
+						m.Mode = ModePalette
+						m.BM.PaletteBuffer.Clear()
+						m.BM.PaletteBuffer.Insert("/" + action.Commands[0] + " ")
+						return
+					}
+
+					action.Callback(m, []string{})
+					return
+				}
+			case BindingChord:
+				if m.AM.CM.Recording {
+					if len(binding.Chord) > len(m.AM.CM.Recorded) {
+						matching := false
+						for i := range m.AM.CM.Recorded {
+							if m.AM.CM.Recorded[i] == binding.Chord[i] {
+								matching = true
+							} else {
+								matching = false
+								break
+							}
+						}
+
+						if matching {
+							hasValidContinuingChordPath = true
+							if binding.Chord[len(m.AM.CM.Recorded)] == util.StandardizeBinding(ev.Name()) {
+								m.AM.CM.Recorded = append(m.AM.CM.Recorded, util.StandardizeBinding(ev.Name()))
+
+								if len(m.AM.CM.Recorded) == len(binding.Chord) {
+									action.Callback(m, []string{})
+									m.AM.CM = NewChordManager()
+									return
+								}
+							} else {
+								continue
+							}
+						} else {
+							continue
+						}
+					} else {
+						continue
+					}
+				} else {
+					if binding.Chord[0] == util.StandardizeBinding(ev.Name()) {
+						hasValidContinuingChordPath = true
+						m.AM.CM.Recorded = append(m.AM.CM.Recorded, util.StandardizeBinding(ev.Name()))
+
+						if len(m.AM.CM.Recorded) == len(binding.Chord) {
+							action.Callback(m, []string{})
+							m.AM.CM = NewChordManager()
+							return
+						} else {
+							m.AM.CM.Recording = true
+						}
+					}
+				}
+			}
 		}
+	}
+
+	if !hasValidContinuingChordPath {
+		m.AM.CM = NewChordManager()
 	}
 
 	if m.Mode == ModeWrite {
