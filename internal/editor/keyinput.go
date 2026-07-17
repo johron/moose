@@ -50,14 +50,8 @@ func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
 									m.AM.CM = NewChordManager()
 									return
 								}
-							} else {
-								continue
 							}
-						} else {
-							continue
 						}
-					} else {
-						continue
 					}
 				} else {
 					if binding.Chord[0] == util.StandardizeBinding(ev.Name()) {

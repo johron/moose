@@ -318,21 +318,6 @@ func DefaultActionManager() ActionManager {
 					}
 				},
 			},
-			Action{
-				Bindings: []Binding{
-					Binding{
-						Type:   BindingSingle,
-						Single: "j",
-					},
-				},
-				Callback: func(m *Model, args []string) {
-					if m.Mode == ModePalette {
-						m.BM.PaletteBuffer.MoveHoriz(-1)
-					} else {
-						m.BM.Current().MoveHoriz(-1)
-					}
-				},
-			},
 		},
 		Insert:  []Action{
 			Action{
@@ -342,8 +327,7 @@ func DefaultActionManager() ActionManager {
 						Single: "shift+up",
 					},
 				},
-				Commands: []string{"TODO:"},
-				AskArgs: false,
+				Commands: []string{"curup"},
 				Callback: func(m *Model, args []string) {
 					m.BM.Current().AddCursorVert(-1)
 				},
@@ -355,8 +339,7 @@ func DefaultActionManager() ActionManager {
 						Single: "shift+down",
 					},
 				},
-				Commands: []string{"TODO:"},
-				AskArgs: false,
+				Commands: []string{"curdown"},
 				Callback: func(m *Model, args []string) {
 					m.BM.Current().AddCursorVert(1)
 				},
@@ -369,7 +352,6 @@ func DefaultActionManager() ActionManager {
 					},
 				},
 				Commands: []string{"clrc", "clearcursors"},
-				AskArgs: false,
 				Callback: func(m *Model, args []string) {
 					m.BM.Current().ClearCursors()
 				},
@@ -381,8 +363,6 @@ func DefaultActionManager() ActionManager {
 						Single: "tab",
 					},
 				},
-				Commands: []string{"TODO:"},
-				AskArgs: false,
 				Callback: func(m *Model, args []string) {
 					for _ = range 4 {
 						m.BM.Current().Insert(" ")
@@ -396,8 +376,6 @@ func DefaultActionManager() ActionManager {
 						Single: "shift+tab",
 					},
 				},
-				Commands: []string{"TODO:"},
-				AskArgs: false,
 				Callback: func(m *Model, args []string) {
 					// TODO: implement m.BM.Current().remove...
 					
