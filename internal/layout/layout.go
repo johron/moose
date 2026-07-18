@@ -1,7 +1,15 @@
 package layout
 
+type Rect struct {
+	x      int
+	y      int
+	width  int
+	height int
+}
+
 type LayoutManager struct {
 	Workspaces []Workspace
+	ActiveIdx  int
 }
 
 type Workspace struct {
@@ -19,8 +27,9 @@ type ContainerNode interface {
 }
 
 type Container[T ContainerNode] struct {
-	Children [2]any
-	Split  SplitType
+	Children 	 [2]any
+	Split  		 SplitType
+	ActiveBuffer *int
 }
 
 func NewLayoutManager() LayoutManager {
@@ -37,7 +46,8 @@ func NewWorkspace() Workspace {
 
 func NewContainerEmpty() Container[[]int] {
 	return Container[[]int]{
-		Children: [2]any{},
-		Split:	  SplitHorizontal,
+		Children: 	  [2]any{},
+		Split:	  	  SplitHorizontal,
+		ActiveBuffer: nil,
 	}
 }

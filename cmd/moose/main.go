@@ -9,14 +9,18 @@ import (
 	"golang.design/x/clipboard"
 )
 
+var Version = "dev"
+
 func main() {
+	fmt.Println("[moose] version " + Version)
+
 	s, err := tcell.NewScreen()
 	if err != nil {
-		fmt.Printf("moose: error: %v", err)
+		fmt.Printf("[moose-error] %v", err)
 		os.Exit(1)
 	}
 	if err := s.Init(); err != nil {
-		fmt.Printf("moose: error: %v", err)
+		fmt.Printf("[moose-error] %v", err)
 		os.Exit(1)
 	}
 
@@ -59,6 +63,9 @@ func main() {
 		switch ev := ev.(type) {
 		case *tcell.EventResize:
 			s.Sync()
+			s.Clear()
+			m.Render()
+			s.Show()
 		case *tcell.EventPaste:
 			if ev.Start() {
 				isPasting = true

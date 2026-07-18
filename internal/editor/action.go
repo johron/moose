@@ -490,7 +490,7 @@ func DefaultActionManager() ActionManager {
 					} else {
 						m.Mode = ModeNormal
 						m.BM.PaletteBuffer.Clear()
-						m.BM.PaletteBuffer.Insert("moose.error:Unknown palette input \"" + cmd + "\"")
+						m.BM.PaletteBuffer.Insert("moose.error:Unknown palette input \"" + args[0] + "\"")
 					}
 				},
 			},
