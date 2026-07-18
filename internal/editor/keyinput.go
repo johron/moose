@@ -6,7 +6,6 @@ import (
 )
 
 func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
-	hasValidContinuingChordPath := false
 
 	// if m.Mode == ModeNormal && util.StandardizeBinding(ev.Name()) is numeric { // type number in normal mode to repeat a keybind x amount of times
 	// m.AM.NumericCM.Recording = true, .... along these lines
@@ -15,8 +14,10 @@ func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
 	for _, action := range append(m.CurrentActionSet(), m.AM.Common...) {
 		for _, binding := range action.Bindings {
 			switch binding.Type {
-			case BindingSingle: 
+			case BindingSingle:
 				if util.StandardizeBinding(binding.Single) == util.StandardizeBinding(ev.Name()) {
+					m.AM.CM = NewChordManager()
+
 					if len(action.Commands) > 0 && action.AskArgs == true {
 						m.Mode = ModePalette
 						m.BM.PaletteBuffer.Clear()
@@ -36,42 +37,43 @@ func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
 								matching = true
 							} else {
 								matching = false
-								break
+								m.AM.CM = NewChordManager()
+								return
 							}
 						}
 
 						if matching {
-							hasValidContinuingChordPath = true
 							if binding.Chord[len(m.AM.CM.Recorded)] == util.StandardizeBinding(ev.Name()) {
 								m.AM.CM.Recorded = append(m.AM.CM.Recorded, util.StandardizeBinding(ev.Name()))
 
 								if len(m.AM.CM.Recorded) == len(binding.Chord) {
 									action.Callback(m, []string{})
 									m.AM.CM = NewChordManager()
-									return
 								}
+
+								return
 							}
 						}
 					}
 				} else {
 					if binding.Chord[0] == util.StandardizeBinding(ev.Name()) {
-						hasValidContinuingChordPath = true
 						m.AM.CM.Recorded = append(m.AM.CM.Recorded, util.StandardizeBinding(ev.Name()))
 
 						if len(m.AM.CM.Recorded) == len(binding.Chord) {
 							action.Callback(m, []string{})
 							m.AM.CM = NewChordManager()
-							return
 						} else {
 							m.AM.CM.Recording = true
 						}
+
+						return
 					}
 				}
 			}
 		}
 	}
 
-	if !hasValidContinuingChordPath {
+	if m.AM.CM.Recording {
 		m.AM.CM = NewChordManager()
 	}
 
