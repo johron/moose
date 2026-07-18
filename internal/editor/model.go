@@ -2,6 +2,7 @@ package editor
 
 import (
 	"moose/internal/buffer"
+	"moose/internal/layout"
 	"github.com/gdamore/tcell/v3"
 )
 
@@ -11,6 +12,7 @@ type Model struct {
 	Mode 	   Mode
 	BM		   buffer.BufferManager
 	AM         ActionManager
+	LM		   layout.LayoutManager
 	ShouldQuit bool
 	DebugLog   string
 }
@@ -26,6 +28,7 @@ func NewModel(screen tcell.Screen, style tcell.Style) Model {
 			PaletteBuffer: buffer.NewBuffer(),
 		},
 		AM:            DefaultActionManager(),
+		LM:			   layout.NewLayoutManager(),
 		ShouldQuit:    false,
 	}
 

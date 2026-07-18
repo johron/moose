@@ -17,6 +17,13 @@ func (bm *BufferManager) Current() *Buffer {
 	return &bm.Buffers[bm.CurrentIdx]
 }
 
+// TODO: implement BufferType (BufferNormal, BufferVisual, BufferInteractive).
+// BufferVisual (completely readonly) and BufferInteractive (readonly for user) will only be navigable the Visual mode.
+// The visual mode will have abilities to modify the buffer, through managed functions which eg. a extension has defined.
+// For example pressing space to check or uncheck a radio button.
+// BufferVisual may be redundant, just use BufferInteractive without any defined functionality? Rename BufferInteractive to BufferVisual?
+// Used for interactive things: file explorer (like emacs dired), ...
+
 type Buffer struct {
 	Rope    *rope.Node
 	LI      *LineIndex
