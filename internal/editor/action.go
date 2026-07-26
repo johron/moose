@@ -9,6 +9,7 @@ import(
 	"golang.design/x/clipboard"
 	"moose/internal/buffer"
 	"moose/internal/util"
+	"moose/internal/about"
 )
 
 type ActionManager = struct {
@@ -54,6 +55,13 @@ func DefaultActionManager() ActionManager {
 	return ActionManager{
 		CM:	     NewChordManager(),
 		Common:  []Action{
+			Action{
+				Commands: []string{"version"},
+				Callback: func(m *Model, args []string) {
+					m.BM.PaletteBuffer.Clear()
+					m.BM.PaletteBuffer.Insert("moose.info:Moose version '" + about.Version + "'")
+				},
+			},
 			Action{
 				Bindings: []Binding{
 					Binding{

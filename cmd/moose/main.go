@@ -9,11 +9,7 @@ import (
 	"golang.design/x/clipboard"
 )
 
-var Version = "dev"
-
 func main() {
-	fmt.Println("[moose] version " + Version)
-
 	s, err := tcell.NewScreen()
 	if err != nil {
 		fmt.Printf("[moose-error] %v", err)
@@ -26,7 +22,8 @@ func main() {
 
 	err = clipboard.Init()
 	if err != nil {
-		panic(err)
+		fmt.Printf("[moose-error] %v", err)
+		os.Exit(1)
 	}
 
 	style := tcell.StyleDefault.Background(color.Reset).Foreground(color.Reset)
@@ -49,10 +46,6 @@ func main() {
 
 	isPasting := false
 
-	s.Clear()
-	m.Render()
-	s.Show()
-
 	for {
 		if m.ShouldQuit {
 			return
@@ -63,9 +56,6 @@ func main() {
 		switch ev := ev.(type) {
 		case *tcell.EventResize:
 			s.Sync()
-			s.Clear()
-			m.Render()
-			s.Show()
 		case *tcell.EventPaste:
 			if ev.Start() {
 				isPasting = true
@@ -75,12 +65,12 @@ func main() {
 		case *tcell.EventKey:
 			if !isPasting {
 				m.HandleKeyInput(ev)
-				
-				s.Clear()
-				m.Render()
-				s.Show()
 			}
 		}
-	}
 
+		s.Clear()
+		//m.Render()
+		m.Draw()
+		s.Show()
+	}
 }

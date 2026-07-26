@@ -3,7 +3,7 @@ BUILD_DIR=build
 MODULE_PATH=./cmd/moose/
 
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
-LDFLAGS=-s -w -X main.Version=$(VERSION) -buildid=
+LDFLAGS=-s -w -X moose/internal/about.Version=$(VERSION) -buildid=
 
 .PHONY: build release run clean
 
@@ -16,7 +16,7 @@ release:
 	CGO_ENABLED=0 go build -trimpath -buildvcs=false -ldflags="$(LDFLAGS)" -o "$(BUILD_DIR)/$(BINARY_NAME)" $(MODULE_PATH)
 
 run:
-	go run $(MODULE_PATH) 
+	go run -ldflags="$(LDFLAGS)" $(MODULE_PATH)
 
 clean:
 	rm -rf $(BUILD_DIR)

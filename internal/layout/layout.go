@@ -1,10 +1,60 @@
 package layout
 
+import (
+	"github.com/gdamore/tcell/v3"
+)
+
 type Rect struct {
-	x      int
-	y      int
-	width  int
-	height int
+	X      int
+	Y      int
+	Width  int
+	Height int
+}
+
+func RectDivide(rect Rect, split SplitType, num int) Rect {
+	switch split {
+	case SplitHorizontal: return Rect{
+		X: rect.X,
+		Y: rect.Y,
+		Width: rect.Width / num,
+		Height: rect.Height,
+	}
+	case SplitVertical: return Rect{
+		X: rect.X,
+		Y: rect.Y,
+		Width: rect.Width,
+		Height: rect.Height / num,
+	}
+	default: panic("[moose-error] impossible split type")
+	}
+}
+
+func RectDisplace(rect Rect, split SplitType, idx int) Rect {
+	switch split {
+	case SplitHorizontal: return Rect{
+		X: rect.X + (rect.Width * idx),
+		Y: rect.Y,
+		Width: rect.Width,
+		Height: rect.Height,
+	}
+	case SplitVertical: return Rect{
+		X: rect.X,
+		Y: rect.Y + (rect.Height * idx),
+		Width: rect.Width,
+		Height: rect.Height,
+	}
+	default: panic("[moose-error] impossible split type")
+	}
+}
+
+func RectFromScren(s tcell.Screen) Rect {
+	sWidth, sHeight := s.Size()
+	return Rect{
+		X: 0,
+		Y: 0,
+		Width: sWidth,
+		Height: sHeight,
+	}
 }
 
 type LayoutManager struct {
@@ -13,7 +63,7 @@ type LayoutManager struct {
 }
 
 type Workspace struct {
-	RootContainer Container[[]int]
+	RootContainer Container[ContainerBuffers]
 }
 
 type SplitType int
@@ -23,13 +73,18 @@ const (
 )
 
 type ContainerNode interface {
-	[]int | Container[[]int]
+	ContainerBuffers | Container[ContainerBuffers]
+}
+
+type ContainerBuffers struct {
+	Buffers   []int
+	ActiveIdx int
 }
 
 type Container[T ContainerNode] struct {
-	Children 	 [2]any
-	Split  		 SplitType
-	ActiveBuffer *int
+	Children 	   [2]any
+	Split  		   SplitType
+	ActiveChildIdx int
 }
 
 func NewLayoutManager() LayoutManager {
@@ -44,10 +99,19 @@ func NewWorkspace() Workspace {
 	}
 }
 
-func NewContainerEmpty() Container[[]int] {
-	return Container[[]int]{
-		Children: 	  [2]any{},
-		Split:	  	  SplitHorizontal,
-		ActiveBuffer: nil,
+func NewContainerEmpty() Container[ContainerBuffers] {
+	return Container[ContainerBuffers]{
+		Children: 	    [2]any{
+			ContainerBuffers{
+				Buffers: []int{0},
+				ActiveIdx: 0,
+			},
+			ContainerBuffers{
+				Buffers: []int{1},
+				ActiveIdx: 0,
+			},
+		},
+		Split:	  	    SplitVertical,
+		ActiveChildIdx: 0,
 	}
 }
