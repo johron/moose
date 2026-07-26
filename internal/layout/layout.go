@@ -1,69 +1,12 @@
 package layout
 
-import (
-	"github.com/gdamore/tcell/v3"
-)
-
-type Rect struct {
-	X      int
-	Y      int
-	Width  int
-	Height int
-}
-
-func RectDivide(rect Rect, split SplitType, num int) Rect {
-	switch split {
-	case SplitHorizontal: return Rect{
-		X: rect.X,
-		Y: rect.Y,
-		Width: rect.Width / num,
-		Height: rect.Height,
-	}
-	case SplitVertical: return Rect{
-		X: rect.X,
-		Y: rect.Y,
-		Width: rect.Width,
-		Height: rect.Height / num,
-	}
-	default: panic("[moose-error] impossible split type")
-	}
-}
-
-func RectDisplace(rect Rect, split SplitType, idx int) Rect {
-	switch split {
-	case SplitHorizontal: return Rect{
-		X: rect.X + (rect.Width * idx),
-		Y: rect.Y,
-		Width: rect.Width,
-		Height: rect.Height,
-	}
-	case SplitVertical: return Rect{
-		X: rect.X,
-		Y: rect.Y + (rect.Height * idx),
-		Width: rect.Width,
-		Height: rect.Height,
-	}
-	default: panic("[moose-error] impossible split type")
-	}
-}
-
-func RectFromScren(s tcell.Screen) Rect {
-	sWidth, sHeight := s.Size()
-	return Rect{
-		X: 0,
-		Y: 0,
-		Width: sWidth,
-		Height: sHeight,
-	}
-}
-
 type LayoutManager struct {
 	Workspaces []Workspace
 	ActiveIdx  int
 }
 
 type Workspace struct {
-	RootContainer Container[ContainerBuffers]
+	RootContainer Container
 }
 
 type SplitType int
@@ -73,7 +16,7 @@ const (
 )
 
 type ContainerNode interface {
-	ContainerBuffers | Container[ContainerBuffers]
+	isContainerNode()
 }
 
 type ContainerBuffers struct {
@@ -81,11 +24,15 @@ type ContainerBuffers struct {
 	ActiveIdx int
 }
 
-type Container[T ContainerNode] struct {
-	Children 	   [2]any
-	Split  		   SplitType
+func (ContainerBuffers) isContainerNode() {}
+
+type Container struct {
+	Children       [2]ContainerNode
+	Split          SplitType
 	ActiveChildIdx int
 }
+
+func (Container) isContainerNode() {}
 
 func NewLayoutManager() LayoutManager {
 	return LayoutManager{
@@ -99,19 +46,49 @@ func NewWorkspace() Workspace {
 	}
 }
 
-func NewContainerEmpty() Container[ContainerBuffers] {
-	return Container[ContainerBuffers]{
-		Children: 	    [2]any{
+func NewContainerEmpty() Container {
+	return Container{
+		Children: 	    [2]ContainerNode{
 			ContainerBuffers{
 				Buffers: []int{0},
-				ActiveIdx: 0,
-			},
-			ContainerBuffers{
-				Buffers: []int{1},
 				ActiveIdx: 0,
 			},
 		},
 		Split:	  	    SplitVertical,
 		ActiveChildIdx: 0,
 	}
+}
+
+// NB: does not set the buffer manager's CurrentIdx, only the layouts active indecies!
+func (c *Container) InsertBufferInContainer(bufferIdx int) {
+	for i := range c.Children {
+		switch child := c.Children[i].(type) {
+		case ContainerBuffers:
+			child.Buffers = append(child.Buffers, bufferIdx)
+			child.ActiveIdx = len(child.Buffers) - 1
+
+			c.Children[i] = child
+			c.ActiveChildIdx = i
+			return
+
+		case Container:
+			child.InsertBufferInContainer(bufferIdx)
+			c.Children[i] = child
+			c.ActiveChildIdx = i
+			return
+		}
+	}
+
+	c.Children[0] = ContainerBuffers{
+		Buffers:   []int{bufferIdx},
+		ActiveIdx: 0,
+	}
+	c.ActiveChildIdx = 0
+}
+
+// ny funksjon som setter in i aktiv
+func (lm *LayoutManager) InsertBuffer(bufferIdx int, newNode bool) {
+	// follow active child trail to find the active buffer container, if not newNode insert in there using InsertBufferInContainer,
+	// else: make new containerbuffers in that current active container, if it's full then split the containerbuffers into a new containernode
+	// and then a new containerbuffers is made and the bufferidx is put there
 }

@@ -5,6 +5,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 	"github.com/zyedidia/rope"
+	"fmt"
+	"os"
 )
 
 type BufferManager struct {
@@ -42,6 +44,23 @@ func NewBuffer() Buffer {
 			PrimaryIdx: 0,
 		},
 	}
+}
+
+func NewBufferFromPath(path string) Buffer {
+	b := NewBuffer()
+	content, err := os.ReadFile(path)
+	if err != nil {
+		fmt.Printf("[moose-error] %v", err)
+		os.Exit(1)
+	}
+
+	b.Clear()
+	b.Rope = rope.New(content)
+	b.LI.Rebuild(b.Rope)
+	b.Path = path
+	b.History = UndoStack{}
+
+	return b
 }
 
 func (buf *Buffer) ensureRope() {

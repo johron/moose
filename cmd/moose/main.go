@@ -7,6 +7,7 @@ import (
 	"github.com/gdamore/tcell/v3"
 	"github.com/gdamore/tcell/v3/color"
 	"golang.design/x/clipboard"
+	"github.com/davecgh/go-spew/spew"
 )
 
 func main() {
@@ -41,6 +42,8 @@ func main() {
 		if maybePanic != nil {
 			panic(maybePanic)
 		}
+
+		spew.Dump(m.LM.Workspaces[0].RootContainer)
 	}
 	defer quit()
 

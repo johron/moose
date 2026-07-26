@@ -362,6 +362,32 @@ func DefaultActionManager() ActionManager {
 					}
 				},
 			},
+			Action{
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "enter",
+					},
+				},
+				Commands: []string{"buf"},
+				AskArgs: false,
+				Callback: func(m *Model, args []string) {
+					m.AddBuffer(false)
+				},
+			},
+			Action{
+				Bindings: []Binding{
+					Binding{
+						Type:  BindingChord,
+						Chord: []string{"l", "enter"},
+					},
+				},
+				Commands: []string{"lbuf"},
+				AskArgs: false,
+				Callback: func(m *Model, args []string) {
+					m.AddBuffer(true)
+				},
+			},
 		},
 		Insert:  []Action{
 			Action{

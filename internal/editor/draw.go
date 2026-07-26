@@ -16,7 +16,7 @@ func (m *Model) DrawWorkspace(w *layout.Workspace, rect layout.Rect) {
 	m.DrawContainer(&w.RootContainer, rect)
 }
 
-func (m *Model) DrawContainer(c *layout.Container[layout.ContainerBuffers], rect layout.Rect) {
+func (m *Model) DrawContainer(c *layout.Container, rect layout.Rect) {
 	length := len(c.Children)
 	rect = layout.RectDivide(rect, c.Split, length)
 
@@ -26,8 +26,8 @@ func (m *Model) DrawContainer(c *layout.Container[layout.ContainerBuffers], rect
 			cb := child.(layout.ContainerBuffers)
 			m.DrawContainerBuffers(&cb, layout.RectDisplace(rect, c.Split, i))
 		}
-		case layout.Container[layout.ContainerBuffers]: {
-			c := child.(layout.Container[layout.ContainerBuffers])
+		case layout.Container: {
+			c := child.(layout.Container)
 			m.DrawContainer(&c, layout.RectDisplace(rect, c.Split, i))
 		}
 		}
