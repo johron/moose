@@ -53,6 +53,10 @@ func NewContainerEmpty() Container {
 				Buffers: []int{0},
 				ActiveIdx: 0,
 			},
+			ContainerBuffers{
+				Buffers: []int{0},
+				ActiveIdx: 0,
+			},
 		},
 		Split:	  	    SplitVertical,
 		ActiveChildIdx: 0,

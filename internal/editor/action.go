@@ -379,7 +379,7 @@ func DefaultActionManager() ActionManager {
 				Bindings: []Binding{
 					Binding{
 						Type:  BindingChord,
-						Chord: []string{"l", "enter"},
+						Chord: []string{"l", "enter"}, // TODO: dette fungerer ikkje, kvifor, det veit eg ikkje...
 					},
 				},
 				Commands: []string{"lbuf"},

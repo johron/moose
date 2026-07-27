@@ -28,3 +28,13 @@ func StandardizeBinding(binding string) string {
 	slices.Sort(arr)
 	return strings.ToLower(strings.Join(arr, "+"))
 }
+
+func NonNilLen[T any](slice []T) int {
+	count := 0
+	for _, item := range slice {
+		if any(item) != nil {
+			count++
+		}
+	}
+	return count
+}

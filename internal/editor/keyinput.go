@@ -35,10 +35,10 @@ func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
 						for i := range m.AM.CM.Recorded {
 							if m.AM.CM.Recorded[i] == binding.Chord[i] {
 								matching = true
-							} else {
-								matching = false
-								m.AM.CM = NewChordManager()
-								return
+							//} else {
+							//	matching = false
+							//	m.AM.CM = NewChordManager()
+							//	return
 							}
 						}
 

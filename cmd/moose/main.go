@@ -44,6 +44,7 @@ func main() {
 		}
 
 		spew.Dump(m.LM.Workspaces[0].RootContainer)
+		fmt.Println(m.DebugLog)
 	}
 	defer quit()
 
