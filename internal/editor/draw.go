@@ -79,7 +79,7 @@ func (m *Model) DrawContainer(c *layout.Container, rect layout.Rect) {
 	length := util.NonNilLen(c.Children[:])
 	rect = layout.Rect{
 		X: rect.X,
-		Y: rect.Y + 1,
+		Y: rect.Y,
 		Width: rect.Width,
 		Height: rect.Height,
 	}

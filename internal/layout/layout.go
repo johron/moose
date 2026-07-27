@@ -58,7 +58,7 @@ func NewContainerEmpty() Container {
 				ActiveIdx: 0,
 			},
 		},
-		Split:	  	    SplitVertical,
+		Split:	  	    SplitHorizontal,
 		ActiveChildIdx: 0,
 	}
 }
