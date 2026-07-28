@@ -52,7 +52,7 @@ func NewChordManager() ChordManager {
 }
 
 func DefaultActionManager() ActionManager {
-	return ActionManager{
+	am := ActionManager{
 		CM:	     NewChordManager(),
 		Common:  []Action{
 			Action{
@@ -530,4 +530,21 @@ func DefaultActionManager() ActionManager {
 			},
 		},
 	}
+
+	for i := range 9 {
+		am.Common = append(am.Common, Action{
+			Bindings: []Binding{
+				Binding{
+					Type:   BindingSingle,
+					Single: "ctrl+" + strconv.Itoa(i + 1),
+				},
+			},
+			Callback: func(m *Model, args []string) {
+				m.Mode = ModeNormal
+				m.LM.ActiveIdx = i
+			},
+		})
+	}
+
+	return am
 }

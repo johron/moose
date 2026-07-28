@@ -10,7 +10,8 @@ func (m *Model) AddBuffer(newNode bool) {
 	m.BM.Buffers = append(m.BM.Buffers, b)
 	m.BM.CurrentIdx = idx
 
-	m.LM.Workspaces[m.LM.ActiveIdx].RootContainer.InsertBufferInContainer(idx)
+	//m.LM.Workspaces[m.LM.ActiveIdx].RootContainer.InsertBufferInContainer(idx)
+	m.LM.InsertBuffer(idx, newNode)
 }
 
 func (m *Model) AddBufferFromPath(path string, newNode bool) {
@@ -19,5 +20,5 @@ func (m *Model) AddBufferFromPath(path string, newNode bool) {
 	m.BM.Buffers = append(m.BM.Buffers, b)
 	m.BM.CurrentIdx = idx
 
-	m.LM.Workspaces[m.LM.ActiveIdx].RootContainer.InsertBufferInContainer(idx)
+	m.LM.InsertBuffer(idx, newNode)
 }

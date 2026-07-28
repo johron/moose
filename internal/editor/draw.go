@@ -25,7 +25,8 @@ func (m *Model) Draw() {
 		Height: 2,
 	}
 
-	m.DrawWorkspace(&m.LM.Workspaces[m.LM.ActiveIdx], main)
+	copy := m.LM.Workspaces[m.LM.ActiveIdx]
+	m.DrawWorkspace(&copy, main)
 	m.DrawPalette(palette)	
 }
 
@@ -77,6 +78,10 @@ func (m *Model) DrawWorkspace(w *layout.Workspace, rect layout.Rect) {
 
 func (m *Model) DrawContainer(c *layout.Container, rect layout.Rect) {
 	length := util.NonNilLen(c.Children[:])
+	if length == 0 {
+		return
+	}
+	
 	rect = layout.Rect{
 		X: rect.X,
 		Y: rect.Y,

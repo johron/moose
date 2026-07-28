@@ -23,7 +23,7 @@ func NewModel(screen tcell.Screen, style tcell.Style) Model {
 		Style:		   style,
 		Mode:		   ModeNormal,
 		BM:            buffer.BufferManager{
-			Buffers:       []buffer.Buffer{buffer.NewBuffer()},
+			Buffers:       []buffer.Buffer{},
 			CurrentIdx:    0,
 			PaletteBuffer: buffer.NewBuffer(),
 		},

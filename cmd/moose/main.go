@@ -43,7 +43,8 @@ func main() {
 			panic(maybePanic)
 		}
 
-		spew.Dump(m.LM.Workspaces[0].RootContainer)
+		spew.Dump(m.LM.Workspaces)
+		spew.Dump(m.BM)
 		fmt.Println(m.DebugLog)
 	}
 	defer quit()

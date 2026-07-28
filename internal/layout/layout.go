@@ -1,7 +1,7 @@
 package layout
 
 type LayoutManager struct {
-	Workspaces []Workspace
+	Workspaces map[int]Workspace
 	ActiveIdx  int
 }
 
@@ -36,7 +36,7 @@ func (Container) isContainerNode() {}
 
 func NewLayoutManager() LayoutManager {
 	return LayoutManager{
-		Workspaces: []Workspace{NewWorkspace()},
+		Workspaces: map[int]Workspace{0: NewWorkspace()},
 	}
 }
 
@@ -48,51 +48,46 @@ func NewWorkspace() Workspace {
 
 func NewContainerEmpty() Container {
 	return Container{
-		Children: 	    [2]ContainerNode{
-			ContainerBuffers{
-				Buffers: []int{0},
-				ActiveIdx: 0,
-			},
-			ContainerBuffers{
-				Buffers: []int{0},
-				ActiveIdx: 0,
-			},
-		},
-		Split:	  	    SplitHorizontal,
+		Children: 	    [2]ContainerNode{},
+		Split:	  	    SplitVertical,
 		ActiveChildIdx: 0,
 	}
 }
 
-// NB: does not set the buffer manager's CurrentIdx, only the layouts active indecies!
-func (c *Container) InsertBufferInContainer(bufferIdx int) {
-	for i := range c.Children {
-		switch child := c.Children[i].(type) {
-		case ContainerBuffers:
-			child.Buffers = append(child.Buffers, bufferIdx)
-			child.ActiveIdx = len(child.Buffers) - 1
-
-			c.Children[i] = child
-			c.ActiveChildIdx = i
-			return
-
-		case Container:
-			child.InsertBufferInContainer(bufferIdx)
-			c.Children[i] = child
-			c.ActiveChildIdx = i
-			return
-		}
+func (c *Container) WalkAndMutateActive(fn func(cb *ContainerBuffers) ContainerNode) {
+	switch child := c.Children[c.ActiveChildIdx].(type) {
+	case ContainerBuffers:
+		c.Children[c.ActiveChildIdx] = fn(&child)
+	case Container:
+		child.WalkAndMutateActive(fn)
+		c.Children[c.ActiveChildIdx] = child
+	default:
+		cb := ContainerBuffers{Buffers: []int{}, ActiveIdx: 0}
+		c.Children[c.ActiveChildIdx] = fn(&cb)
 	}
-
-	c.Children[0] = ContainerBuffers{
-		Buffers:   []int{bufferIdx},
-		ActiveIdx: 0,
-	}
-	c.ActiveChildIdx = 0
 }
 
-// ny funksjon som setter in i aktiv
 func (lm *LayoutManager) InsertBuffer(bufferIdx int, newNode bool) {
-	// follow active child trail to find the active buffer container, if not newNode insert in there using InsertBufferInContainer,
-	// else: make new containerbuffers in that current active container, if it's full then split the containerbuffers into a new containernode
-	// and then a new containerbuffers is made and the bufferidx is put there
+	workspace := lm.Workspaces[lm.ActiveIdx]
+
+	workspace.RootContainer.WalkAndMutateActive(func(cb *ContainerBuffers) ContainerNode {
+		if !newNode || len(cb.Buffers) == 0 {
+			cb.Buffers = append(cb.Buffers, bufferIdx)
+			cb.ActiveIdx = len(cb.Buffers) - 1
+			return *cb
+		}
+
+		cbNew := ContainerBuffers{
+			Buffers:   []int{bufferIdx},
+			ActiveIdx: 0,
+		}
+
+		return Container{
+			Children:       [2]ContainerNode{cbNew, *cb},
+			Split:          SplitHorizontal,
+			ActiveChildIdx: 0,
+		}
+	})
+
+	lm.Workspaces[lm.ActiveIdx] = workspace
 }
