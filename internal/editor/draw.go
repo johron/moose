@@ -14,7 +14,7 @@ func (m *Model) Draw() {
 	screen := layout.RectFromScren(m.Screen)
 	main := layout.Rect{
 		X: screen.X,
-		Y: screen.Y + 1,
+		Y: screen.Y,
 		Width: screen.Width,
 		Height: screen.Height - 2,
 	}
@@ -84,7 +84,7 @@ func (m *Model) DrawContainer(c *layout.Container, rect layout.Rect) {
 	
 	rect = layout.Rect{
 		X: rect.X,
-		Y: rect.Y,
+		Y: rect.Y + 1,
 		Width: rect.Width,
 		Height: rect.Height,
 	}
