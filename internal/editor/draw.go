@@ -14,7 +14,7 @@ func (m *Model) Draw() {
 	screen := layout.RectFromScren(m.Screen)
 	main := layout.Rect{
 		X: screen.X,
-		Y: screen.Y,
+		Y: screen.Y + 1,
 		Width: screen.Width,
 		Height: screen.Height - 2,
 	}

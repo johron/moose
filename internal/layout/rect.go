@@ -33,15 +33,15 @@ func RectDisplace(rect Rect, split SplitType, idx int) Rect {
 	switch split {
 	case SplitHorizontal: return Rect{
 		X: rect.X + (rect.Width * idx),
-		Y: rect.Y + 1,
+		Y: rect.Y,// + 1,
 		Width: rect.Width,
-		Height: rect.Height - 1,
+		Height: rect.Height,// - 1,
 	}
 	case SplitVertical: return Rect{
 		X: rect.X,
-		Y: rect.Y + (rect.Height * idx) + 1,
+		Y: rect.Y + (rect.Height * idx),// + 1,
 		Width: rect.Width,
-		Height: rect.Height - 1,
+		Height: rect.Height,// - 1,
 	}
 	default: panic("[moose-error] impossible split type")
 	}

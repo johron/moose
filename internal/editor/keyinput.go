@@ -15,6 +15,10 @@ func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
 		for _, binding := range action.Bindings {
 			switch binding.Type {
 			case BindingSingle:
+				if m.AM.CM.Recording {
+					continue
+				}
+
 				if util.StandardizeBinding(binding.Single) == util.StandardizeBinding(ev.Name()) {
 					m.AM.CM = NewChordManager()
 

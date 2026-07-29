@@ -1,8 +1,9 @@
 package layout
 
 type LayoutManager struct {
-	Workspaces map[int]Workspace
-	ActiveIdx  int
+	Workspaces   map[int]Workspace
+	ActiveIdx    int
+	CurrentSplit SplitType
 }
 
 type Workspace struct {
@@ -14,6 +15,15 @@ const (
 	SplitHorizontal SplitType = iota
 	SplitVertical
 )
+
+func (s *SplitType) SetOpposite()  SplitType{
+	if *s == SplitHorizontal {
+		*s = SplitVertical
+	} else {
+		*s = SplitHorizontal
+	}
+	return *s
+}
 
 type ContainerNode interface {
 	isContainerNode()
@@ -37,6 +47,7 @@ func (Container) isContainerNode() {}
 func NewLayoutManager() LayoutManager {
 	return LayoutManager{
 		Workspaces: map[int]Workspace{0: NewWorkspace()},
+		CurrentSplit: SplitVertical,
 	}
 }
 
@@ -48,8 +59,13 @@ func NewWorkspace() Workspace {
 
 func NewContainerEmpty() Container {
 	return Container{
-		Children: 	    [2]ContainerNode{},
-		Split:	  	    SplitVertical,
+		Children: 	    [2]ContainerNode{
+			ContainerBuffers{
+				Buffers: []int{0},
+				ActiveIdx: 0,
+			},
+		},
+		Split:	  	    SplitHorizontal,
 		ActiveChildIdx: 0,
 	}
 }
@@ -83,9 +99,9 @@ func (lm *LayoutManager) InsertBuffer(bufferIdx int, newNode bool) {
 		}
 
 		return Container{
-			Children:       [2]ContainerNode{cbNew, *cb},
-			Split:          SplitHorizontal,
-			ActiveChildIdx: 0,
+			Children:       [2]ContainerNode{*cb, cbNew},
+			Split:          lm.CurrentSplit.SetOpposite(),
+			ActiveChildIdx: 1,
 		}
 	})
 
