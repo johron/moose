@@ -84,7 +84,7 @@ func (m *Model) DrawContainer(c *layout.Container, rect layout.Rect) {
 	
 	rect = layout.Rect{
 		X: rect.X,
-		Y: rect.Y + 1,
+		Y: rect.Y,
 		Width: rect.Width,
 		Height: rect.Height,
 	}
@@ -92,15 +92,19 @@ func (m *Model) DrawContainer(c *layout.Container, rect layout.Rect) {
 
 	for i, child := range c.Children {
 		main := layout.RectDisplace(rect, c.Split, i)
+
 		switch child.(type) {
 		case layout.ContainerBuffers: {
 			cb := child.(layout.ContainerBuffers)
 			tabs := layout.Rect{
 				X: main.X,
-				Y: main.Y - 1,
+				Y: main.Y,
 				Width: main.Width,
 				Height: 1,
 			}
+
+			main.Y += 1
+			main.Height -= 1
 			
 			m.DrawContainerTabs(&cb, tabs)
 			m.DrawContainerBuffers(&cb, main)
