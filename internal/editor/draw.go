@@ -8,6 +8,7 @@ import (
 	"strings"
 	"strconv"
 	"github.com/gdamore/tcell/v3/color"
+	"slices"
 )
 
 func (m *Model) Draw() {
@@ -54,9 +55,23 @@ func (m *Model) DrawPalette(rect layout.Rect) {
 		splitStr = "V"
 	}
 	m.Screen.PutStrStyled(rect.Width - (len(modeStr) + 1) - 5, rect.Y, splitStr, m.Style.Background(color.Black))
+
+	populatedWorkspaces := []string{strconv.Itoa(m.LM.ActiveIdx + 1)}
+	for workspaceIdx, workspace := range m.LM.Workspaces {
+		if workspaceIdx == m.LM.ActiveIdx {
+			continue
+		}
+
+		if !workspace.IsEmpty() {
+			populatedWorkspaces = append(populatedWorkspaces, strconv.Itoa(workspaceIdx + 1))
+		}
+	}
+	slices.Sort(populatedWorkspaces)
+	workspacesStr := strings.Join(populatedWorkspaces, " ")
+	m.Screen.PutStrStyled(1,  rect.Y, workspacesStr, m.Style.Background(color.Black))
 	
-	logStr := m.DebugLog + ", " + strings.Join(m.AM.CM.Recorded, "+") + ", " + strconv.FormatBool(m.AM.CM.Recording)
-	m.Screen.PutStrStyled(1, rect.Y, logStr, m.Style.Background(color.Black))
+	//logStr := m.DebugLog + ", " + strings.Join(m.AM.CM.Recorded, "+") + ", " + strconv.FormatBool(m.AM.CM.Recording)
+	//m.Screen.PutStrStyled(1, rect.Y, logStr, m.Style.Background(color.Black))
 
 	if m.Mode == ModePalette {
 		m.Screen.PutStrStyled(0, rect.Y + 1, m.BM.PaletteBuffer.String(), m.Style)
@@ -126,9 +141,14 @@ func (m *Model) DrawContainer(c *layout.Container, rect layout.Rect) {
 
 func (m *Model) DrawContainerTabs(c *layout.ContainerBuffers, rect layout.Rect) {
 	tabs := []string{}
+	activeTabIdx := -1
 	for _, bufIdx := range c.Buffers {
 		if bufIdx >= len(m.BM.Buffers) {
 			continue
+		}
+
+		if c.ActiveIdx < len(c.Buffers) && c.Buffers[c.ActiveIdx] == bufIdx {
+			activeTabIdx = len(tabs)
 		}
 
 		buf := m.BM.Buffers[bufIdx]
@@ -140,13 +160,17 @@ func (m *Model) DrawContainerTabs(c *layout.ContainerBuffers, rect layout.Rect) 
 	}
 
 	length := 0
-	for _, tab := range tabs {
+	for i, tab := range tabs {
 		if length + len(tab) + 2 > rect.Width {
 			m.Screen.PutStrStyled(rect.X + length, rect.Y, ">", m.Style.Foreground(color.White))
 			return
 		}
 
-		m.Screen.PutStrStyled(rect.X + length, rect.Y, tab, m.Style.Background(color.Black).Foreground(color.White))
+		style := m.Style.Background(color.Black).Foreground(color.DarkGray)
+		if i == activeTabIdx {
+			style = style.Foreground(color.White)
+		}
+		m.Screen.PutStrStyled(rect.X + length, rect.Y, tab, style)
 		length += len(tab) + 1
 	}
 }

@@ -6,8 +6,12 @@ type LayoutManager struct {
 	CurrentSplit SplitType
 }
 
-type Workspace struct {
+type Workspace struct { // TODO: this is not necessary..
 	RootContainer Container
+}
+
+func (w Workspace) IsEmpty() bool {
+    return !isPopulated(w.RootContainer)
 }
 
 type SplitType int
@@ -19,10 +23,11 @@ const (
 func (s *SplitType) SetOpposite()  SplitType{
 	if *s == SplitHorizontal {
 		*s = SplitVertical
+        return SplitHorizontal
 	} else {
 		*s = SplitHorizontal
+        return SplitVertical
 	}
-	return *s
 }
 
 type ContainerNode interface {
@@ -47,7 +52,7 @@ func (Container) isContainerNode() {}
 func NewLayoutManager() LayoutManager {
 	return LayoutManager{
 		Workspaces: map[int]Workspace{0: NewWorkspace()},
-		CurrentSplit: SplitVertical,
+		CurrentSplit: SplitHorizontal,
 	}
 }
 
@@ -63,7 +68,7 @@ func NewContainerEmpty() Container {
             nil,
             nil,
         },
-        Split:          SplitVertical,
+        Split:          SplitHorizontal,
         ActiveChildIdx: 0,
     }
 }
@@ -233,8 +238,70 @@ func (c Container) RemoveActive() (ContainerNode, bool) {
     }
 }
 
+func (c Container) ContainsBufferIdx(target int) bool {
+    switch child := c.Children[c.ActiveChildIdx].(type) {
+    case ContainerBuffers:
+        for _, idx := range child.Buffers {
+            if idx == target {
+                return true
+            }
+        }
+    case Container:
+        if child.ContainsBufferIdx(target) {
+            return true
+        }
+    }
+
+    for _, node := range c.Children {
+        switch child := node.(type) {
+        case ContainerBuffers:
+            for _, idx := range child.Buffers {
+                if idx == target {
+                    return true
+                }
+            }
+        case Container:
+            if child.ContainsBufferIdx(target) {
+                return true
+            }
+        }
+    }
+
+    return false
+}
+
+func (c *Container) ActivateBufferIdx(target int) bool {
+    for i, child := range c.Children {
+        switch n := child.(type) {
+        case ContainerBuffers:
+            for j, idx := range n.Buffers {
+                if idx == target {
+                    c.ActiveChildIdx = i
+                    n.ActiveIdx = j
+                    c.Children[i] = n
+                    return true
+                }
+            }
+        case Container:
+            if n.ActivateBufferIdx(target) {
+                c.Children[i] = n
+                return true
+            }
+        }
+    }
+    return false
+}
+
 func (lm *LayoutManager) RemoveActiveBufferAndReindex(removedIdx int) int {
     ws := lm.Workspaces[lm.ActiveIdx]
+
+    if !ws.RootContainer.ContainsBufferIdx(removedIdx) {
+        return ws.RootContainer.GetActiveBufferIdx()
+    }
+
+    if !ws.RootContainer.ActivateBufferIdx(removedIdx) {
+        return ws.RootContainer.GetActiveBufferIdx()
+    }
 
     newRoot, isEmpty := ws.RootContainer.RemoveActive()
     if newRoot == nil || isEmpty {

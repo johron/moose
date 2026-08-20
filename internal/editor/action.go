@@ -613,6 +613,12 @@ func DefaultActionManager() ActionManager {
 			Callback: func(m *Model, args []string) {
 				m.Mode = ModeNormal
 				m.LM.ActiveIdx = i
+
+				if bufIdx := m.LM.GetActiveBufferIdx(); bufIdx >= 0 && bufIdx < len(m.BM.Buffers) {
+					m.BM.CurrentIdx = bufIdx
+				} else if len(m.BM.Buffers) > 0 {
+					m.BM.CurrentIdx = 0
+				}
 			},
 		})
 	}

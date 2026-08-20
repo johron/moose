@@ -37,6 +37,15 @@ func (m *Model) RemoveActiveBuffer() {
     }
 
     removedIdx := m.BM.CurrentIdx
+    if removedIdx < 0 || removedIdx >= len(m.BM.Buffers) {
+        return
+    }
+
+    ws, ok := m.LM.Workspaces[m.LM.ActiveIdx]
+    if !ok || !ws.RootContainer.ContainsBufferIdx(removedIdx) {
+        return
+    }
+
     newActiveIdx := m.LM.RemoveActiveBufferAndReindex(removedIdx)
     m.BM.Buffers = slices.Delete(m.BM.Buffers, removedIdx, removedIdx+1)
 
