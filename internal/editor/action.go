@@ -10,6 +10,7 @@ import(
 	"moose/internal/buffer"
 	"moose/internal/util"
 	"moose/internal/about"
+	"moose/internal/layout"
 )
 
 type ActionManager = struct {
@@ -379,13 +380,83 @@ func DefaultActionManager() ActionManager {
 				Bindings: []Binding{
 					Binding{
 						Type:  BindingChord,
-						Chord: []string{"l", "enter"}, // TODO: dette fungerer ikkje, kvifor, det veit eg ikkje...
+						Chord: []string{"l", "enter"},
 					},
 				},
 				Commands: []string{"lbuf"},
 				AskArgs: false,
 				Callback: func(m *Model, args []string) {
 					m.AddBuffer(true)
+				},
+			},
+			Action{
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "ctrl+left",
+					},
+				},
+				Callback: func(m *Model, args []string) {
+					m.CycleActiveBuffer(-1.0, 0.0)
+				},
+			},
+			Action{
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "ctrl+v",
+					},
+				},
+				Callback: func(m *Model, args []string) {
+					if m.LM.CurrentSplit == layout.SplitHorizontal {
+						m.LM.CurrentSplit = layout.SplitVertical
+					} else {
+						m.LM.CurrentSplit = layout.SplitHorizontal
+					}
+				},
+			},
+			Action{
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "ctrl+down",
+					},
+				},
+				Callback: func(m *Model, args []string) {
+					m.CycleActiveBuffer(0.0, 1.0)
+				},
+			},
+			Action{
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "ctrl+up",
+					},
+				},
+				Callback: func(m *Model, args []string) {
+					m.CycleActiveBuffer(0.0, -1.0)
+				},
+			},
+			Action{
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "ctrl+right",
+					},
+				},
+				Callback: func(m *Model, args []string) {
+					m.CycleActiveBuffer(1.0, 0.0)
+				},
+			},
+			Action{
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "ctrl+x",
+					},
+				},
+				Callback: func(m *Model, args []string) {
+					m.RemoveActiveBuffer()
 				},
 			},
 		},

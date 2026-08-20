@@ -18,23 +18,24 @@ type Model struct {
 }
 
 func NewModel(screen tcell.Screen, style tcell.Style) Model {
-	model := Model{
-		Screen:	       screen,
-		Style:		   style,
-		Mode:		   ModeNormal,
-		BM:            buffer.BufferManager{
-			Buffers:       []buffer.Buffer{buffer.NewBuffer()},
-			CurrentIdx:    0,
-			PaletteBuffer: buffer.NewBuffer(),
-		},
-		AM:            DefaultActionManager(),
-		LM:			   layout.NewLayoutManager(),
-		ShouldQuit:    false,
-	}
+    blank := buffer.NewBuffer()
 
-	return model
+    model := Model{
+        Screen: screen,
+        Style:  style,
+        Mode:   ModeNormal,
+        BM: buffer.BufferManager{
+            Buffers:       []buffer.Buffer{blank},
+            CurrentIdx:    0,
+            PaletteBuffer: buffer.NewBuffer(),
+        },
+        AM:         DefaultActionManager(),
+        LM:         layout.NewLayoutManager(),
+        ShouldQuit: false,
+    }
+
+    return model
 }
-
 func (m *Model) CurrentActionSet() []Action {
 	switch m.Mode {
 	case ModeNormal:  return m.AM.Normal

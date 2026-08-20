@@ -1,12 +1,13 @@
 package buffer
 
 import (
+	"fmt"
+	"os"
 	"slices"
 	"unicode"
 	"unicode/utf8"
+
 	"github.com/zyedidia/rope"
-	"fmt"
-	"os"
 )
 
 type BufferManager struct {
@@ -16,7 +17,15 @@ type BufferManager struct {
 }
 
 func (bm *BufferManager) Current() *Buffer {
-	return &bm.Buffers[bm.CurrentIdx]
+    if len(bm.Buffers) == 0 {
+        return nil
+    }
+
+    if bm.CurrentIdx < 0 || bm.CurrentIdx >= len(bm.Buffers) {
+        bm.CurrentIdx = len(bm.Buffers) - 1
+    }
+
+    return &bm.Buffers[bm.CurrentIdx]
 }
 
 // TODO: implement BufferType (BufferNormal, BufferVisual, BufferInteractive).
@@ -64,6 +73,10 @@ func NewBufferFromPath(path string) Buffer {
 }
 
 func (buf *Buffer) ensureRope() {
+	if buf == nil {
+		return
+	}
+
 	if buf.Rope == nil {
 		buf.Rope = rope.New([]byte{})
 	}
@@ -73,6 +86,10 @@ func (buf *Buffer) ensureRope() {
 }
 
 func (buf *Buffer) Insert(content string) {
+	if buf == nil {
+		return
+	}
+
 	buf.ensureRope()
 	buf.CM.DeduplicateAndSort()
 
@@ -162,51 +179,51 @@ func (buf *Buffer) Delete() {
 }
 
 func (buf *Buffer) DeleteLine() {
-    buf.ensureRope()
-    buf.CM.DeduplicateAndSort()
+	buf.ensureRope()
+	buf.CM.DeduplicateAndSort()
 
-    if buf.Rope.Len() == 0 || len(buf.CM.Cursors) == 0 {
-        return
-    }
+	if buf.Rope.Len() == 0 || len(buf.CM.Cursors) == 0 {
+		return
+	}
 
-    cursorsBefore, primaryBefore := buf.begin()
+	cursorsBefore, primaryBefore := buf.begin()
 
-    primary := buf.CM.Cursors[buf.CM.PrimaryIdx]
-    line, _ := LineCol(buf, primary.Offset)
+	primary := buf.CM.Cursors[buf.CM.PrimaryIdx]
+	line, _ := LineCol(buf, primary.Offset)
 
-    start := OffsetForLine(buf, line)
-    end := buf.Rope.Len()
+	start := OffsetForLine(buf, line)
+	end := buf.Rope.Len()
 
 	if line+1 < LineCount(buf) {
-        end = OffsetForLine(buf, line+1)
-    } else if line > 0 && start > 0 && buf.Rope.At(start-1) == '\n' {
-        start--
-    }
+		end = OffsetForLine(buf, line+1)
+	} else if line > 0 && start > 0 && buf.Rope.At(start-1) == '\n' {
+		start--
+	}
 
-    if end <= start {
-        return
-    }
+	if end <= start {
+		return
+	}
 
-    deleted := append([]byte{}, buf.Rope.Slice(start, end)...)
-    edit := Edit{Offset: start, Deleted: deleted}
-    buf.apply(edit)
+	deleted := append([]byte{}, buf.Rope.Slice(start, end)...)
+	edit := Edit{Offset: start, Deleted: deleted}
+	buf.apply(edit)
 
-    newLine := line
-    if newLine >= LineCount(buf) {
-        newLine = LineCount(buf) - 1
-    }
-    if newLine < 0 {
-        newLine = 0
-    }
-    newOffset := OffsetForLine(buf, newLine)
+	newLine := line
+	if newLine >= LineCount(buf) {
+		newLine = LineCount(buf) - 1
+	}
+	if newLine < 0 {
+		newLine = 0
+	}
+	newOffset := OffsetForLine(buf, newLine)
 
-    for i := range buf.CM.Cursors {
-        buf.CM.Cursors[i].Offset = newOffset
-        buf.CM.Cursors[i].Goal = 0
-    }
+	for i := range buf.CM.Cursors {
+		buf.CM.Cursors[i].Offset = newOffset
+		buf.CM.Cursors[i].Goal = 0
+	}
 
-    buf.CM.DeduplicateAndSort()
-    buf.commit(cursorsBefore, primaryBefore, []Edit{edit})
+	buf.CM.DeduplicateAndSort()
+	buf.commit(cursorsBefore, primaryBefore, []Edit{edit})
 }
 
 func (buf *Buffer) Clear() {
@@ -356,7 +373,6 @@ func (buf *Buffer) AddCursorVert(dir int) {
 		if targetLine < 0 || targetLine >= LineCount(buf) {
 			continue
 		}
-
 
 		goal := buf.CM.Cursors[buf.CM.PrimaryIdx].Goal
 

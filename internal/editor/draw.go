@@ -45,8 +45,15 @@ func (m *Model) DrawPalette(rect layout.Rect) {
 			modeStr += " (replace)"
 		}
 	}
-
 	m.Screen.PutStrStyled(rect.Width - (len(modeStr) + 1), rect.Y, strings.ToUpper(modeStr), m.Style.Background(color.Black))
+
+	splitStr := ""
+	if m.LM.CurrentSplit == layout.SplitHorizontal {
+		splitStr = "H"
+	} else {
+		splitStr = "V"
+	}
+	m.Screen.PutStrStyled(rect.Width - (len(modeStr) + 1) - 5, rect.Y, splitStr, m.Style.Background(color.Black))
 	
 	logStr := m.DebugLog + ", " + strings.Join(m.AM.CM.Recorded, "+") + ", " + strconv.FormatBool(m.AM.CM.Recording)
 	m.Screen.PutStrStyled(1, rect.Y, logStr, m.Style.Background(color.Black))
@@ -120,6 +127,10 @@ func (m *Model) DrawContainer(c *layout.Container, rect layout.Rect) {
 func (m *Model) DrawContainerTabs(c *layout.ContainerBuffers, rect layout.Rect) {
 	tabs := []string{}
 	for _, bufIdx := range c.Buffers {
+		if bufIdx >= len(m.BM.Buffers) {
+			continue
+		}
+
 		buf := m.BM.Buffers[bufIdx]
 		if buf.Path == "" {
 			tabs = append(tabs, "Buffer " + strconv.Itoa(bufIdx))
@@ -141,6 +152,13 @@ func (m *Model) DrawContainerTabs(c *layout.ContainerBuffers, rect layout.Rect) 
 }
 
 func (m *Model) DrawContainerBuffers(c *layout.ContainerBuffers, rect layout.Rect) {
+	if c.ActiveIdx >= len(c.Buffers) {
+		return
+	}
+	if c.Buffers[c.ActiveIdx] >= len(m.BM.Buffers) {
+		return
+	}
+
 	m.DrawBuffer(&m.BM.Buffers[c.Buffers[c.ActiveIdx]], c.Buffers[c.ActiveIdx] == m.BM.CurrentIdx, rect)
 }
 

@@ -31,6 +31,7 @@ func main() {
 	s.SetStyle(style)
 
 	m := editor.NewModel(s, style)
+	m.AddBuffer(false)
 
 	s.EnableMouse()
 	s.EnablePaste()
