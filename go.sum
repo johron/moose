@@ -13,6 +13,8 @@ github.com/gdamore/tcell/v3 v3.4.0/go.mod h1:fjKxNiIFwbzTxDU+i+AAMz+xPOgXVaZq5tb
 github.com/lucasb-eyer/go-colorful v1.4.0 h1:UtrWVfLdarDgc44HcS7pYloGHJUjHV/4FwW4TvVgFr4=
 github.com/lucasb-eyer/go-colorful v1.4.0/go.mod h1:R4dSotOR9KMtayYi1e77YzuveK+i7ruzyGqttikkLy0=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
+github.com/yuin/gopher-lua v1.1.2 h1:yF/FjE3hD65tBbt0VXLE13HWS9h34fdzJmrWRXwobGA=
+github.com/yuin/gopher-lua v1.1.2/go.mod h1:7aRmXIWl37SqRf0koeyylBEzJ+aPt8A+mmkQ4f1ntR8=
 github.com/zyedidia/rope v0.0.0-20210616205215-37fbf22eab3a h1:+VbuFCNAjzVffErUlm0TIAZClFxFZwJ1il6qtWrnIg8=
 github.com/zyedidia/rope v0.0.0-20210616205215-37fbf22eab3a/go.mod h1:IKo1js3O2gdESAUH9F3B33wlrRBnpJMJR/gXyY0a3ho=
 golang.design/x/clipboard v0.8.0 h1:6VEcH28wwcSgKc+vnxHHDWiRjrakTQIAJnPUrt3aOgg=

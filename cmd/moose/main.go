@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"moose/internal/editor"
+	"moose/internal/extension"
 	"github.com/gdamore/tcell/v3"
 	"github.com/gdamore/tcell/v3/color"
 	"golang.design/x/clipboard"
@@ -32,6 +33,8 @@ func main() {
 
 	m := editor.NewModel(s, style)
 	m.AddBuffer(false)
+
+	init_extensions(&m)
 
 	s.EnableMouse()
 	s.EnablePaste()
@@ -78,5 +81,14 @@ func main() {
 		//m.Render()
 		m.Draw()
 		s.Show()
+	}
+}
+
+func init_extensions(m *editor.Model) {
+	em := extension.NewExtensionManager(m)
+	if err := em.LoadString("test", "print(ms)"); err != nil {
+		m.Mode = editor.ModeNormal
+		m.BM.PaletteBuffer.Clear()
+		m.BM.PaletteBuffer.Insert("moose.error:Lua error " + err.Error())
 	}
 }
