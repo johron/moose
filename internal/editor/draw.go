@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"github.com/gdamore/tcell/v3/color"
 	"slices"
+	"math"
 )
 
 func (m *Model) Draw() {
@@ -186,7 +187,7 @@ func (m *Model) DrawContainerTabs(c *layout.ContainerBuffers, rect layout.Rect) 
 			style = style.Foreground(color.White)
 		}
 
-		tabStr := strconv.Itoa((activeTabIdx - i) * -1) + ": " + tab
+		tabStr := strconv.Itoa(int(math.Abs(float64((activeTabIdx - i))))) + ": " + tab
 
 		m.Screen.PutStrStyled(rect.X + length, rect.Y, tabStr, style)
 		length += len(tabStr) + 1
@@ -222,7 +223,7 @@ func (m *Model) DrawBuffer(buf *buffer.Buffer, isActive bool, rect layout.Rect) 
 
 		lineNum := j + buf.TopLine
 		relLine := lineNum - curLine
-		nums := fmt.Sprintf("%4d ", relLine)
+		nums := fmt.Sprintf("%4d ", int(math.Abs(float64(relLine))))
 		r := []rune(nums + expandTabs(line))
 		if len(r) + 1 > rect.Width {
 			r = r[:rect.Width]
