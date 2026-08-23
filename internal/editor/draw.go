@@ -220,7 +220,9 @@ func (m *Model) DrawBuffer(buf *buffer.Buffer, isActive bool, rect layout.Rect) 
 	for j, line := range table {
 		if j + 1 > rect.Height { break }
 
-		nums := fmt.Sprintf("%4d ", j + buf.TopLine)
+		lineNum := j + buf.TopLine
+		relLine := lineNum - curLine
+		nums := fmt.Sprintf("%4d ", relLine)
 		r := []rune(nums + expandTabs(line))
 		if len(r) + 1 > rect.Width {
 			r = r[:rect.Width]
