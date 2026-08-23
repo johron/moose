@@ -3,6 +3,8 @@ package editor
 import (
 	"github.com/gdamore/tcell/v3"
 	"moose/internal/util"
+	"strconv"
+	"strings"
 )
 
 func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
@@ -11,6 +13,20 @@ func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
 	// m.AM.NumericCM.Recording = true, .... along these lines
 	//}
 
+	if m.AM.CM.Recording == false {
+		num, err := strconv.Atoi(util.StandardizeBinding(ev.Name()))
+		if err != nil {
+			goto Out
+		}
+
+		if m.Mode == ModeNormal {
+			m.AM.RCM.Recording = true
+			m.AM.RCM.Recorded = append(m.AM.RCM.Recorded, strconv.Itoa(num))
+			return
+		}
+	}
+
+Out:
 	for _, action := range append(m.CurrentActionSet(), m.AM.Common...) {
 		for _, binding := range action.Bindings {
 			switch binding.Type {
@@ -29,8 +45,24 @@ func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
 						return
 					}
 
-					action.Callback(m, []string{})
-					return
+					if m.AM.RCM.Recording == true {
+						times, err := strconv.Atoi(strings.Join(m.AM.RCM.Recorded, ""))
+						if err != nil {
+							action.Callback(m, []string{})
+							m.AM.RCM = NewChordManager()
+							return
+						}
+
+						for range times {
+							action.Callback(m, []string{})
+						}
+
+						m.AM.RCM = NewChordManager()
+						return
+					} else {
+						action.Callback(m, []string{})
+						return
+					}
 				}
 			case BindingChord:
 				if m.AM.CM.Recording {
@@ -39,10 +71,6 @@ func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
 						for i := range m.AM.CM.Recorded {
 							if m.AM.CM.Recorded[i] == binding.Chord[i] {
 								matching = true
-							//} else {
-							//	matching = false
-							//	m.AM.CM = NewChordManager()
-							//	return
 							}
 						}
 
@@ -51,7 +79,23 @@ func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
 								m.AM.CM.Recorded = append(m.AM.CM.Recorded, util.StandardizeBinding(ev.Name()))
 
 								if len(m.AM.CM.Recorded) == len(binding.Chord) {
-									action.Callback(m, []string{})
+									if m.AM.RCM.Recording == true {
+										times, err := strconv.Atoi(strings.Join(m.AM.RCM.Recorded, ""))
+										if err != nil {
+											action.Callback(m, []string{})
+											m.AM.RCM = NewChordManager()
+											m.AM.CM = NewChordManager()
+											return
+										}
+
+										for range times {
+											action.Callback(m, []string{})
+										}
+									} else {
+										action.Callback(m, []string{})
+									}
+
+									m.AM.RCM = NewChordManager()
 									m.AM.CM = NewChordManager()
 								}
 
@@ -65,6 +109,7 @@ func (m *Model) HandleKeyInput(ev *tcell.EventKey) {
 
 						if len(m.AM.CM.Recorded) == len(binding.Chord) {
 							action.Callback(m, []string{})
+							m.AM.RCM = NewChordManager()
 							m.AM.CM = NewChordManager()
 						} else {
 							m.AM.CM.Recording = true

@@ -41,6 +41,17 @@ type ContainerBuffers struct {
 
 func (ContainerBuffers) isContainerNode() {}
 
+func (cb *ContainerBuffers) SelectBufferNumber(bufferNumber int) bool {
+    for idx, bufferIdx := range cb.Buffers {
+        if bufferIdx == bufferNumber {
+            cb.ActiveIdx = idx
+            return true
+        }
+    }
+
+    return false
+}
+
 type Container struct {
 	Children       [2]ContainerNode
 	Split          SplitType
@@ -274,13 +285,10 @@ func (c *Container) ActivateBufferIdx(target int) bool {
     for i, child := range c.Children {
         switch n := child.(type) {
         case ContainerBuffers:
-            for j, idx := range n.Buffers {
-                if idx == target {
-                    c.ActiveChildIdx = i
-                    n.ActiveIdx = j
-                    c.Children[i] = n
-                    return true
-                }
+            if n.SelectBufferNumber(target) {
+                c.ActiveChildIdx = i
+                c.Children[i] = n
+                return true
             }
         case Container:
             if n.ActivateBufferIdx(target) {

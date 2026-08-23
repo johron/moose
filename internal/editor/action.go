@@ -19,6 +19,7 @@ type ActionManager = struct {
 	Insert  []Action
 	Palette []Action
 	CM		ChordManager
+	RCM     ChordManager
 }
 
 type Action = struct {
@@ -41,8 +42,8 @@ const (
 )
 
 type ChordManager = struct {
-	Recording   bool
-	Recorded    []string
+	Recording bool
+	Recorded  []string
 }
 
 func NewChordManager() ChordManager {
@@ -56,6 +57,42 @@ func DefaultActionManager() ActionManager {
 	am := ActionManager{
 		CM:	     NewChordManager(),
 		Common:  []Action{
+			Action{
+				Commands: []string{"bsel"},
+				AskArgs:  true,
+				Callback: func(m *Model, args []string) {
+					if len(args) < 1 {
+						return
+					}
+
+					n, err := strconv.Atoi(args[0])
+					if err != nil || n < 1 {
+						return
+					}
+
+					targetTab := n - 1
+
+					ws, ok := m.LM.Workspaces[m.LM.ActiveIdx]
+					if !ok {
+						return
+					}
+
+					selected := false
+					ws.RootContainer.WalkAndMutateActive(func(cb *layout.ContainerBuffers) layout.ContainerNode {
+						if targetTab >= 0 && targetTab < len(cb.Buffers) {
+							cb.ActiveIdx = targetTab
+							m.BM.CurrentIdx = cb.Buffers[targetTab]
+							selected = true
+						}
+						return *cb
+					})
+
+					if selected {
+						m.LM.Workspaces[m.LM.ActiveIdx] = ws
+						m.Mode = ModeNormal
+					}
+				},
+			},
 			Action{
 				Commands: []string{"version"},
 				Callback: func(m *Model, args []string) {
@@ -257,6 +294,78 @@ func DefaultActionManager() ActionManager {
 					}
 				},
 			},
+			Action{
+				Bindings: []Binding{
+					Binding{
+						Type:  BindingChord,
+						Chord: []string{"ctrl+l", "enter"},
+					},
+				},
+				Commands: []string{"lbuf"},
+				AskArgs: false,
+				Callback: func(m *Model, args []string) {
+					m.AddBuffer(true)
+				},
+			},
+			Action{
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "ctrl+left",
+					},
+				},
+				Callback: func(m *Model, args []string) {
+					m.CycleActiveBuffer(-1.0, 0.0)
+				},
+			},
+			Action{
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "ctrl+v",
+					},
+				},
+				Callback: func(m *Model, args []string) {
+					if m.LM.CurrentSplit == layout.SplitHorizontal {
+						m.LM.CurrentSplit = layout.SplitVertical
+					} else {
+						m.LM.CurrentSplit = layout.SplitHorizontal
+					}
+				},
+			},
+			Action{
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "ctrl+down",
+					},
+				},
+				Callback: func(m *Model, args []string) {
+					m.CycleActiveBuffer(0.0, 1.0)
+				},
+			},
+			Action{
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "ctrl+up",
+					},
+				},
+				Callback: func(m *Model, args []string) {
+					m.CycleActiveBuffer(0.0, -1.0)
+				},
+			},
+			Action{
+				Bindings: []Binding{
+					Binding{
+						Type:   BindingSingle,
+						Single: "ctrl+right",
+					},
+				},
+				Callback: func(m *Model, args []string) {
+					m.CycleActiveBuffer(1.0, 0.0)
+				},
+			},
 		},
 		Normal:  []Action{
 			Action{
@@ -374,78 +483,6 @@ func DefaultActionManager() ActionManager {
 				AskArgs: false,
 				Callback: func(m *Model, args []string) {
 					m.AddBuffer(false)
-				},
-			},
-			Action{
-				Bindings: []Binding{
-					Binding{
-						Type:  BindingChord,
-						Chord: []string{"l", "enter"},
-					},
-				},
-				Commands: []string{"lbuf"},
-				AskArgs: false,
-				Callback: func(m *Model, args []string) {
-					m.AddBuffer(true)
-				},
-			},
-			Action{
-				Bindings: []Binding{
-					Binding{
-						Type:   BindingSingle,
-						Single: "ctrl+left",
-					},
-				},
-				Callback: func(m *Model, args []string) {
-					m.CycleActiveBuffer(-1.0, 0.0)
-				},
-			},
-			Action{
-				Bindings: []Binding{
-					Binding{
-						Type:   BindingSingle,
-						Single: "ctrl+v",
-					},
-				},
-				Callback: func(m *Model, args []string) {
-					if m.LM.CurrentSplit == layout.SplitHorizontal {
-						m.LM.CurrentSplit = layout.SplitVertical
-					} else {
-						m.LM.CurrentSplit = layout.SplitHorizontal
-					}
-				},
-			},
-			Action{
-				Bindings: []Binding{
-					Binding{
-						Type:   BindingSingle,
-						Single: "ctrl+down",
-					},
-				},
-				Callback: func(m *Model, args []string) {
-					m.CycleActiveBuffer(0.0, 1.0)
-				},
-			},
-			Action{
-				Bindings: []Binding{
-					Binding{
-						Type:   BindingSingle,
-						Single: "ctrl+up",
-					},
-				},
-				Callback: func(m *Model, args []string) {
-					m.CycleActiveBuffer(0.0, -1.0)
-				},
-			},
-			Action{
-				Bindings: []Binding{
-					Binding{
-						Type:   BindingSingle,
-						Single: "ctrl+right",
-					},
-				},
-				Callback: func(m *Model, args []string) {
-					m.CycleActiveBuffer(1.0, 0.0)
 				},
 			},
 			Action{

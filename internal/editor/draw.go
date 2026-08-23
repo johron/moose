@@ -31,6 +31,20 @@ func (m *Model) Draw() {
 	m.DrawPalette(palette)	
 }
 
+func (m *Model) generateChordStr() string {
+	chordStr := ""
+	
+	if len(m.AM.RCM.Recorded) > 0 {
+		chordStr += strings.Join(m.AM.RCM.Recorded, "") + " + "
+	}
+
+	if len(m.AM.CM.Recorded) > 0 {
+		chordStr += strings.Join(m.AM.CM.Recorded, "+") + " +"
+	}
+
+	return chordStr
+}
+
 func (m *Model) DrawPalette(rect layout.Rect) {
 	for col := 0; col < rect.Width; col++ {
 		m.Screen.SetContent(rect.X + col, rect.Y, ' ', nil, m.Style.Background(color.Black))
@@ -68,10 +82,11 @@ func (m *Model) DrawPalette(rect layout.Rect) {
 	}
 	slices.Sort(populatedWorkspaces)
 	workspacesStr := strings.Join(populatedWorkspaces, " ")
-	m.Screen.PutStrStyled(1,  rect.Y, workspacesStr, m.Style.Background(color.Black))
-	
-	//logStr := m.DebugLog + ", " + strings.Join(m.AM.CM.Recorded, "+") + ", " + strconv.FormatBool(m.AM.CM.Recording)
-	//m.Screen.PutStrStyled(1, rect.Y, logStr, m.Style.Background(color.Black))
+	m.Screen.PutStrStyled(1, rect.Y, workspacesStr, m.Style.Background(color.Black))
+
+	chordStr := m.generateChordStr()
+	m.Screen.PutStrStyled(len(workspacesStr) + 2, rect.Y, chordStr, m.Style.Background(color.Black))
+	m.Screen.PutStrStyled(len(chordStr) + 1, rect.Y, m.DebugLog, m.Style.Background(color.Black))
 
 	if m.Mode == ModePalette {
 		m.Screen.PutStrStyled(0, rect.Y + 1, m.BM.PaletteBuffer.String(), m.Style)
@@ -170,8 +185,11 @@ func (m *Model) DrawContainerTabs(c *layout.ContainerBuffers, rect layout.Rect) 
 		if i == activeTabIdx {
 			style = style.Foreground(color.White)
 		}
-		m.Screen.PutStrStyled(rect.X + length, rect.Y, tab, style)
-		length += len(tab) + 1
+
+		tabStr := strconv.Itoa((activeTabIdx - i) * -1) + ": " + tab
+
+		m.Screen.PutStrStyled(rect.X + length, rect.Y, tabStr, style)
+		length += len(tabStr) + 1
 	}
 }
 
