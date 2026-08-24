@@ -69,7 +69,7 @@ func (li *LineIndex) InsertAt(pos int, data []byte) {
 	})
 
 	var newStarts []int
-	for j := 0; j < len(data); j++ {
+	for j := range data {
 		if data[j] == '\n' {
 			newStarts = append(newStarts, pos+j+1)
 		}

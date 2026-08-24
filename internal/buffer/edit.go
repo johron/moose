@@ -1,5 +1,7 @@
 package buffer
 
+import "slices"
+
 type Edit struct {
 	Offset   int
 	Deleted  []byte
@@ -86,8 +88,8 @@ func (buf *Buffer) Undo() bool {
 	t := buf.History.done[len(buf.History.done)-1]
 	buf.History.done = buf.History.done[:len(buf.History.done)-1]
 
-	for i := len(t.Edits) - 1; i >= 0; i-- {
-		buf.apply(t.Edits[i].Invert())
+	for _, v := range slices.Backward(t.Edits) {
+		buf.apply(v.Invert())
 	}
 
 	buf.CM.Cursors = cloneCursors(t.CursorsBefore)
