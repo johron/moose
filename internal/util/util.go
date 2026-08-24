@@ -1,8 +1,8 @@
 package util
 
 import (
-	"strings"
 	"slices"
+	"strings"
 )
 
 func StandardizeBindingsArray(arr []string) []string {
@@ -18,8 +18,9 @@ func StandardizeBinding(binding string) string {
 
 	for i, s := range arr {
 		lower := strings.ToLower(s)
+		lower = strings.ReplaceAll(lower, "backtab", "shift+tab")
 		arr[i] = lower
-		
+
 		if strings.HasPrefix(lower, "rune[") && strings.HasSuffix(lower, "]") {
 			arr[i] = lower[5 : len(s)-1]
 		}

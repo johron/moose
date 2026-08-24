@@ -8,7 +8,7 @@ import (
 
 type Model struct {
 	Screen	   tcell.Screen
-	Style	   tcell.Style
+	Config     Config
 	Mode 	   Mode
 	BM		   buffer.BufferManager
 	AM         ActionManager
@@ -17,12 +17,12 @@ type Model struct {
 	DebugLog   string
 }
 
-func NewModel(screen tcell.Screen, style tcell.Style) Model {
+func NewModel(screen tcell.Screen) Model {
     blank := buffer.NewBuffer()
 
     model := Model{
         Screen: screen,
-        Style:  style,
+        Config: DefaultConfig(),
         Mode:   ModeNormal,
         BM: buffer.BufferManager{
             Buffers:       []buffer.Buffer{blank},

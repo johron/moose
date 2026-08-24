@@ -6,7 +6,6 @@ import (
 	"moose/internal/editor"
 	"moose/internal/extension"
 	"github.com/gdamore/tcell/v3"
-	"github.com/gdamore/tcell/v3/color"
 	"golang.design/x/clipboard"
 	"github.com/davecgh/go-spew/spew"
 )
@@ -28,10 +27,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	style := tcell.StyleDefault.Background(color.Reset).Foreground(color.Reset)
-	s.SetStyle(style)
-
-	m := editor.NewModel(s, style)
+	m := editor.NewModel(s)
 	m.AddBuffer(false)
 
 	init_extensions(&m)

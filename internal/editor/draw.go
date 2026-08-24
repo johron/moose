@@ -1,40 +1,41 @@
 package editor
 
 import (
-	"moose/internal/layout"
-	"moose/internal/buffer"
-	"moose/internal/util"
 	"fmt"
-	"strings"
-	"strconv"
-	"github.com/gdamore/tcell/v3/color"
-	"slices"
 	"math"
+	"moose/internal/buffer"
+	"moose/internal/layout"
+	"moose/internal/util"
+	"slices"
+	"strconv"
+	"strings"
+
+	"github.com/gdamore/tcell/v3"
 )
 
 func (m *Model) Draw() {
 	screen := layout.RectFromScren(m.Screen)
 	main := layout.Rect{
-		X: screen.X,
-		Y: screen.Y,
-		Width: screen.Width,
+		X:      screen.X,
+		Y:      screen.Y,
+		Width:  screen.Width,
 		Height: screen.Height - 2,
 	}
 	palette := layout.Rect{
-		X: screen.X,
-		Y: main.Height,
-		Width: screen.Width,
+		X:      screen.X,
+		Y:      main.Height,
+		Width:  screen.Width,
 		Height: 2,
 	}
 
 	copy := m.LM.Workspaces[m.LM.ActiveIdx]
 	m.DrawWorkspace(&copy, main)
-	m.DrawPalette(palette)	
+	m.DrawPalette(palette)
 }
 
 func (m *Model) generateChordStr() string {
 	chordStr := ""
-	
+
 	if len(m.AM.RCM.Recorded) > 0 {
 		chordStr += strings.Join(m.AM.RCM.Recorded, "") + " + "
 	}
@@ -48,7 +49,7 @@ func (m *Model) generateChordStr() string {
 
 func (m *Model) DrawPalette(rect layout.Rect) {
 	for col := 0; col < rect.Width; col++ {
-		m.Screen.SetContent(rect.X + col, rect.Y, ' ', nil, m.Style.Background(color.Black))
+		m.Screen.SetContent(rect.X+col, rect.Y, ' ', nil, m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Style.PaletteBarBackground)).Foreground(tcell.GetColor(m.Config.Style.PaletteBarForeground)))
 	}
 
 	modeStr := m.Mode.String()
@@ -61,7 +62,7 @@ func (m *Model) DrawPalette(rect layout.Rect) {
 			modeStr += " (replace)"
 		}
 	}
-	m.Screen.PutStrStyled(rect.Width - (len(modeStr) + 1), rect.Y, strings.ToUpper(modeStr), m.Style.Background(color.Black))
+	m.Screen.PutStrStyled(rect.Width-(len(modeStr)+1), rect.Y, strings.ToUpper(modeStr), m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.PaletteBarForeground)).Background(tcell.GetColor(m.Config.Style.PaletteBarBackground)))
 
 	splitStr := ""
 	if m.LM.CurrentSplit == layout.SplitHorizontal {
@@ -69,7 +70,7 @@ func (m *Model) DrawPalette(rect layout.Rect) {
 	} else {
 		splitStr = "V"
 	}
-	m.Screen.PutStrStyled(rect.Width - (len(modeStr) + 1) - 5, rect.Y, splitStr, m.Style.Background(color.Black))
+	m.Screen.PutStrStyled(rect.Width-(len(modeStr)+1)-5, rect.Y, splitStr, m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.PaletteBarForeground)).Background(tcell.GetColor(m.Config.Style.PaletteBarBackground)))
 
 	populatedWorkspaces := []string{strconv.Itoa(m.LM.ActiveIdx + 1)}
 	for workspaceIdx, workspace := range m.LM.Workspaces {
@@ -78,35 +79,39 @@ func (m *Model) DrawPalette(rect layout.Rect) {
 		}
 
 		if !workspace.IsEmpty() {
-			populatedWorkspaces = append(populatedWorkspaces, strconv.Itoa(workspaceIdx + 1))
+			populatedWorkspaces = append(populatedWorkspaces, strconv.Itoa(workspaceIdx+1))
 		}
 	}
 	slices.Sort(populatedWorkspaces)
 	workspacesStr := strings.Join(populatedWorkspaces, " ")
-	m.Screen.PutStrStyled(1, rect.Y, workspacesStr, m.Style.Background(color.Black))
+	m.Screen.PutStrStyled(1, rect.Y, workspacesStr, m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.WorkspaceForeground)).Background(tcell.GetColor(m.Config.Style.WorkspaceBackground)))
 
 	chordStr := m.generateChordStr()
-	m.Screen.PutStrStyled(len(workspacesStr) + 2, rect.Y, chordStr, m.Style.Background(color.Black))
-	m.Screen.PutStrStyled(len(chordStr) + 1, rect.Y, m.DebugLog, m.Style.Background(color.Black))
+	m.Screen.PutStrStyled(len(workspacesStr)+2, rect.Y, chordStr, m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.PaletteBarForeground)).Background(tcell.GetColor(m.Config.Style.PaletteBarBackground)))
+	m.Screen.PutStrStyled(len(chordStr)+1, rect.Y, m.DebugLog, m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.PaletteBarForeground)).Background(tcell.GetColor(m.Config.Style.PaletteInputBackground)))
 
 	if m.Mode == ModePalette {
-		m.Screen.PutStrStyled(0, rect.Y + 1, m.BM.PaletteBuffer.String(), m.Style)
+		m.Screen.PutStrStyled(0, rect.Y+1, m.BM.PaletteBuffer.String(), m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.PaletteInputForeground)).Background(tcell.GetColor(m.Config.Style.PaletteInputBackground)))
 
 		for _, cur := range m.BM.PaletteBuffer.CM.Cursors {
 			line, col := buffer.LineCol(&m.BM.PaletteBuffer, cur.Offset)
-			if line + rect.Y != rect.Y { continue }
-			if col + 1 > rect.Width { continue }
+			if line+rect.Y != rect.Y {
+				continue
+			}
+			if col+1 > rect.Width {
+				continue
+			}
 
 			ch := buffer.RuneAt(&m.BM.PaletteBuffer, cur.Offset)
 
-			m.Screen.SetContent(col, rect.Y + 1, ch, nil, m.Style.Reverse(true))
+			m.Screen.SetContent(col, rect.Y+1, ch, nil, m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Style.CursorColorWrite)))
 		}
 	} else if strings.HasPrefix(m.BM.PaletteBuffer.String(), "moose.info:") {
-		m.Screen.PutStrStyled(0, rect.Y + 1, string([]rune(m.BM.PaletteBuffer.String())[11:]), m.Style.Foreground(color.LightGray))
+		m.Screen.PutStrStyled(0, rect.Y+1, string([]rune(m.BM.PaletteBuffer.String())[11:]), m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.InfoMsgForeground)).Background(tcell.GetColor(m.Config.Style.InfoMsgBackground)))
 	} else if strings.HasPrefix(m.BM.PaletteBuffer.String(), "moose.warn:") {
-		m.Screen.PutStrStyled(0, rect.Y + 1, string([]rune(m.BM.PaletteBuffer.String())[11:]), m.Style.Foreground(color.Orange))
+		m.Screen.PutStrStyled(0, rect.Y+1, string([]rune(m.BM.PaletteBuffer.String())[11:]), m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.WarnMsgForeground)).Background(tcell.GetColor(m.Config.Style.WarnMsgBackground)))
 	} else if strings.HasPrefix(m.BM.PaletteBuffer.String(), "moose.error:") {
-		m.Screen.PutStrStyled(0, rect.Y + 1, string([]rune(m.BM.PaletteBuffer.String())[12:]), m.Style.Foreground(color.Red))
+		m.Screen.PutStrStyled(0, rect.Y+1, string([]rune(m.BM.PaletteBuffer.String())[12:]), m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.ErrorMsgForeground)).Background(tcell.GetColor(m.Config.Style.ErrorMsgBackground)))
 	}
 }
 
@@ -119,11 +124,11 @@ func (m *Model) DrawContainer(c *layout.Container, rect layout.Rect) {
 	if length == 0 {
 		return
 	}
-	
+
 	rect = layout.Rect{
-		X: rect.X,
-		Y: rect.Y,
-		Width: rect.Width,
+		X:      rect.X,
+		Y:      rect.Y,
+		Width:  rect.Width,
 		Height: rect.Height,
 	}
 	rect = layout.RectDivide(rect, c.Split, length)
@@ -132,25 +137,27 @@ func (m *Model) DrawContainer(c *layout.Container, rect layout.Rect) {
 		main := layout.RectDisplace(rect, c.Split, i)
 
 		switch child.(type) {
-		case layout.ContainerBuffers: {
-			cb := child.(layout.ContainerBuffers)
-			tabs := layout.Rect{
-				X: main.X,
-				Y: main.Y,
-				Width: main.Width,
-				Height: 1,
-			}
+		case layout.ContainerBuffers:
+			{
+				cb := child.(layout.ContainerBuffers)
+				tabs := layout.Rect{
+					X:      main.X,
+					Y:      main.Y,
+					Width:  main.Width,
+					Height: 1,
+				}
 
-			main.Y += 1
-			main.Height -= 1
-			
-			m.DrawContainerTabs(&cb, tabs)
-			m.DrawContainerBuffers(&cb, main)
-		}
-		case layout.Container: {
-			c := child.(layout.Container)
-			m.DrawContainer(&c, main)
-		}
+				main.Y += 1
+				main.Height -= 1
+
+				m.DrawContainerTabs(&cb, tabs)
+				m.DrawContainerBuffers(&cb, main)
+			}
+		case layout.Container:
+			{
+				c := child.(layout.Container)
+				m.DrawContainer(&c, main)
+			}
 		}
 	}
 }
@@ -169,27 +176,27 @@ func (m *Model) DrawContainerTabs(c *layout.ContainerBuffers, rect layout.Rect) 
 
 		buf := m.BM.Buffers[bufIdx]
 		if buf.Path == "" {
-			tabs = append(tabs, "Buffer " + strconv.Itoa(bufIdx))
+			tabs = append(tabs, "Buffer "+strconv.Itoa(bufIdx))
 		} else {
 			tabs = append(tabs, buf.Path)
-		}		
+		}
 	}
 
 	length := 0
 	for i, tab := range tabs {
-		if length + len(tab) + 2 > rect.Width {
-			m.Screen.PutStrStyled(rect.X + length, rect.Y, ">", m.Style.Foreground(color.White))
+		if length+len(tab)+2 > rect.Width {
+			m.Screen.PutStrStyled(rect.X+length, rect.Y, ">", m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.TabForeground)).Background(tcell.GetColor(m.Config.Style.TabBackground)))
 			return
 		}
 
-		style := m.Style.Background(color.Black).Foreground(color.DarkGray)
+		style := m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Style.TabBackground)).Foreground(tcell.GetColor(m.Config.Style.TabForeground))
 		if i == activeTabIdx {
-			style = style.Foreground(color.White)
+			style = style.Foreground(tcell.GetColor(m.Config.Style.TabForegroundActive)).Background(tcell.GetColor(m.Config.Style.TabBackgroundActive))
 		}
 
 		tabStr := strconv.Itoa(int(math.Abs(float64((activeTabIdx - i))))) + ": " + tab
 
-		m.Screen.PutStrStyled(rect.X + length, rect.Y, tabStr, style)
+		m.Screen.PutStrStyled(rect.X+length, rect.Y, tabStr, style)
 		length += len(tabStr) + 1
 	}
 }
@@ -219,34 +226,40 @@ func (m *Model) DrawBuffer(buf *buffer.Buffer, isActive bool, rect layout.Rect) 
 	visible := string(buf.Rope.Slice(startOffset, endOffset))
 	table := strings.SplitAfter(visible, "\n")
 	for j, line := range table {
-		if j + 1 > rect.Height { break }
+		if j+1 > rect.Height {
+			break
+		}
 
 		lineNum := j + buf.TopLine
 		relLine := lineNum - curLine
 		nums := fmt.Sprintf("%4d ", int(math.Abs(float64(relLine))))
 		r := []rune(nums + expandTabs(line))
-		if len(r) + 1 > rect.Width {
+		if len(r)+1 > rect.Width {
 			r = r[:rect.Width]
 		}
 
-		m.Screen.PutStrStyled(rect.X, rect.Y + j, string(r), m.Style)
+		m.Screen.PutStrStyled(rect.X, rect.Y+j, string(r), m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.MainForeground)).Background(tcell.GetColor(m.Config.Style.MainBackground)))
 	}
 
 	if isActive {
 		for _, cur := range buf.CM.Cursors {
 			line, col := buffer.LineCol(buf, cur.Offset)
 			screenLine := line - buf.TopLine
-			if screenLine < 0 || screenLine + 1 > rect.Height { continue }
+			if screenLine < 0 || screenLine+1 > rect.Height {
+				continue
+			}
 
 			visCol := visualCol(buffer.LineText(buf, line), col)
-			if visCol + 1 > rect.Width { continue }
+			if visCol+1 > rect.Width {
+				continue
+			}
 
 			ch := buffer.RuneAt(buf, cur.Offset)
 
 			if m.Mode == ModeWrite {
-				m.Screen.SetContent(rect.X + visCol + 5, rect.Y + screenLine, ch, nil, m.Style.Reverse(true))
+				m.Screen.SetContent(rect.X+visCol+5, rect.Y+screenLine, ch, nil, m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Style.CursorColorWrite)))
 			} else {
-				m.Screen.SetContent(rect.X + visCol + 5, rect.Y + screenLine, ch, nil, m.Style.Reverse(true).Foreground(color.Gray))	
+				m.Screen.SetContent(rect.X+visCol+5, rect.Y+screenLine, ch, nil, m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Style.CursorColor)))
 			}
 		}
 	}

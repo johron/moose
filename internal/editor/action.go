@@ -1,16 +1,17 @@
 package editor
 
-import(
-	"strings"
-	"strconv"
-	"slices"
+import (
+	"moose/internal/about"
+	"moose/internal/buffer"
+	"moose/internal/layout"
+	"moose/internal/util"
 	"os"
+	"slices"
+	"strconv"
+	"strings"
+
 	"github.com/zyedidia/rope"
 	"golang.design/x/clipboard"
-	"moose/internal/buffer"
-	"moose/internal/util"
-	"moose/internal/about"
-	"moose/internal/layout"
 )
 
 type ActionManager = struct {
@@ -18,15 +19,15 @@ type ActionManager = struct {
 	Normal  []Action
 	Insert  []Action
 	Palette []Action
-	CM		ChordManager
+	CM      ChordManager
 	RCM     ChordManager
 }
 
 type Action = struct {
-	Bindings  []Binding
-	Commands  []string
-	AskArgs   bool
-	Callback  func(*Model, []string)
+	Bindings []Binding
+	Commands []string
+	AskArgs  bool
+	Callback func(*Model, []string)
 }
 
 type Binding = struct {
@@ -36,6 +37,7 @@ type Binding = struct {
 }
 
 type BindingType int
+
 const (
 	BindingSingle BindingType = iota
 	BindingChord
@@ -55,8 +57,8 @@ func NewChordManager() ChordManager {
 
 func DefaultActionManager() ActionManager {
 	am := ActionManager{
-		CM:	     NewChordManager(),
-		Common:  []Action{
+		CM: NewChordManager(),
+		Common: []Action{
 			Action{
 				Commands: []string{"bsel"},
 				AskArgs:  true,
@@ -94,6 +96,54 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 			Action{
+				Bindings: []Binding{
+					Binding{
+						Type:  BindingSingle,
+						Single: "ctrl+tab",
+					},
+				},
+				Callback: func(m *Model, args []string) {
+					ws, ok := m.LM.Workspaces[m.LM.ActiveIdx]
+					if !ok {
+						return
+					}
+
+					ws.RootContainer.WalkAndMutateActive(func(cb *layout.ContainerBuffers) layout.ContainerNode {
+						if len(cb.Buffers) > 0 {
+							cb.ActiveIdx = (cb.ActiveIdx + 1) % len(cb.Buffers)
+							m.BM.CurrentIdx = cb.Buffers[cb.ActiveIdx]
+						}
+						return *cb
+					})
+
+					m.LM.Workspaces[m.LM.ActiveIdx] = ws
+				},
+			},
+			Action{
+				Bindings: []Binding{
+					Binding{
+						Type:  BindingSingle,
+						Single: "ctrl+shift+tab",
+					},
+				},
+				Callback: func(m *Model, args []string) {
+					ws, ok := m.LM.Workspaces[m.LM.ActiveIdx]
+					if !ok {
+						return
+					}
+
+					ws.RootContainer.WalkAndMutateActive(func(cb *layout.ContainerBuffers) layout.ContainerNode {
+						if len(cb.Buffers) > 0 {
+							cb.ActiveIdx = (cb.ActiveIdx - 1 + len(cb.Buffers)) % len(cb.Buffers)
+							m.BM.CurrentIdx = cb.Buffers[cb.ActiveIdx]
+						}
+						return *cb
+					})
+
+					m.LM.Workspaces[m.LM.ActiveIdx] = ws
+				},
+			},
+			Action{
 				Commands: []string{"version"},
 				Callback: func(m *Model, args []string) {
 					m.BM.PaletteBuffer.Clear()
@@ -119,7 +169,7 @@ func DefaultActionManager() ActionManager {
 					},
 				},
 				Commands: []string{"q", "quit"},
-				AskArgs: true,
+				AskArgs:  true,
 				Callback: func(m *Model, args []string) {
 					m.Quit()
 				},
@@ -132,7 +182,7 @@ func DefaultActionManager() ActionManager {
 					},
 				},
 				Commands: []string{"s", "save"},
-				AskArgs: false,
+				AskArgs:  false,
 				Callback: func(m *Model, args []string) {
 					path := ""
 					if len(args) < 1 || args[0] == "" {
@@ -172,7 +222,7 @@ func DefaultActionManager() ActionManager {
 					},
 				},
 				Commands: []string{"s", "save"},
-				AskArgs: true,
+				AskArgs:  true,
 			},
 			Action{
 				Bindings: []Binding{
@@ -182,7 +232,7 @@ func DefaultActionManager() ActionManager {
 					},
 				},
 				Commands: []string{"e", "edit"},
-				AskArgs: true,
+				AskArgs:  true,
 				Callback: func(m *Model, args []string) {
 					if len(args) < 1 {
 						m.Mode = ModeNormal
@@ -230,7 +280,7 @@ func DefaultActionManager() ActionManager {
 				},
 				Callback: func(m *Model, args []string) {
 					if m.Mode == ModePalette {
-						m.BM.PaletteBuffer.MoveHoriz(1)					
+						m.BM.PaletteBuffer.MoveHoriz(1)
 					} else {
 						m.BM.Current().MoveHoriz(1)
 					}
@@ -302,7 +352,7 @@ func DefaultActionManager() ActionManager {
 					},
 				},
 				Commands: []string{"lbuf"},
-				AskArgs: false,
+				AskArgs:  false,
 				Callback: func(m *Model, args []string) {
 					m.AddBuffer(true)
 				},
@@ -367,7 +417,7 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 		},
-		Normal:  []Action{
+		Normal: []Action{
 			Action{
 				Bindings: []Binding{
 					Binding{
@@ -459,7 +509,7 @@ func DefaultActionManager() ActionManager {
 					},
 				},
 				Commands: []string{"p", "paste"},
-				AskArgs: false,
+				AskArgs:  false,
 				Callback: func(m *Model, args []string) {
 					text := clipboard.Read(clipboard.FmtText)
 
@@ -480,7 +530,7 @@ func DefaultActionManager() ActionManager {
 					},
 				},
 				Commands: []string{"buf"},
-				AskArgs: false,
+				AskArgs:  false,
 				Callback: func(m *Model, args []string) {
 					m.AddBuffer(false)
 				},
@@ -497,7 +547,7 @@ func DefaultActionManager() ActionManager {
 				},
 			},
 		},
-		Insert:  []Action{
+		Insert: []Action{
 			Action{
 				Bindings: []Binding{
 					Binding{
@@ -556,7 +606,7 @@ func DefaultActionManager() ActionManager {
 				},
 				Callback: func(m *Model, args []string) {
 					// TODO: implement m.BM.Current().remove...
-					
+
 				},
 			},
 			Action{
@@ -613,9 +663,11 @@ func DefaultActionManager() ActionManager {
 					cmd := string([]rune(args[0])[1:])
 					if strings.HasPrefix(args[0], "/") {
 						for _, action := range append(m.AM.Common, append(m.AM.Normal, m.AM.Insert...)...) {
-							if action.Callback == nil { continue }
+							if action.Callback == nil {
+								continue
+							}
 
-							if len(action.Commands) > 0 &&  slices.Contains(util.StandardizeBindingsArray(action.Commands), util.StandardizeBinding(cmd)) {
+							if len(action.Commands) > 0 && slices.Contains(util.StandardizeBindingsArray(action.Commands), util.StandardizeBinding(cmd)) {
 								m.Mode = ModeNormal
 								action.Callback(m, args[1:])
 								return
@@ -644,7 +696,7 @@ func DefaultActionManager() ActionManager {
 			Bindings: []Binding{
 				Binding{
 					Type:   BindingSingle,
-					Single: "ctrl+" + strconv.Itoa(i + 1),
+					Single: "ctrl+" + strconv.Itoa(i+1),
 				},
 			},
 			Callback: func(m *Model, args []string) {

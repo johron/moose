@@ -11,7 +11,7 @@ import (
 
 type ExtensionManager struct {
 	L *lua.LState
-	Model *editor.Model
+	M *editor.Model
 	LoadedFiles []string
 }
 
@@ -21,7 +21,7 @@ var embeddedScripts embed.FS
 func NewExtensionManager(m *editor.Model) *ExtensionManager {
 	em := &ExtensionManager{
 		L: lua.NewState(),
-		Model: m,
+		M: m,
 	}
 
 	em.registerAPI()
@@ -92,6 +92,7 @@ func (em *ExtensionManager) registerAPI() {
 
 	moose := em.L.NewTable()
 	em.L.SetGlobal("ms", moose)
+	moose.RawSetString("config", GetConfigTable(em))
 }
 
 func (em *ExtensionManager) LoadFile(path string) error {
