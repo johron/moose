@@ -17,15 +17,15 @@ type BufferManager struct {
 }
 
 func (bm *BufferManager) Current() *Buffer {
-    if len(bm.Buffers) == 0 {
-        return nil
-    }
+	if len(bm.Buffers) == 0 {
+		return nil
+	}
 
-    if bm.CurrentIdx < 0 || bm.CurrentIdx >= len(bm.Buffers) {
-        bm.CurrentIdx = len(bm.Buffers) - 1
-    }
+	if bm.CurrentIdx < 0 || bm.CurrentIdx >= len(bm.Buffers) {
+		bm.CurrentIdx = len(bm.Buffers) - 1
+	}
 
-    return &bm.Buffers[bm.CurrentIdx]
+	return &bm.Buffers[bm.CurrentIdx]
 }
 
 // TODO: implement BufferType (BufferNormal, BufferVisual, BufferInteractive).
@@ -104,11 +104,7 @@ func (buf *Buffer) Insert(content string) {
 	for i := range buf.CM.Cursors {
 		cur := &buf.CM.Cursors[i]
 
-		pos := cur.Offset + delta
-
-		if pos < 0 {
-			pos = 0
-		}
+		pos := max(cur.Offset+delta, 0)
 		if pos > buf.Rope.Len() {
 			pos = buf.Rope.Len()
 		}
@@ -157,10 +153,7 @@ func (buf *Buffer) Delete() {
 			size = 1
 		}
 
-		start := pos - size
-		if start < 0 {
-			start = 0
-		}
+		start := max(pos-size, 0)
 
 		deleted := append([]byte{}, buf.Rope.Slice(start, pos)...)
 		edit := Edit{Offset: start, Deleted: deleted}
@@ -348,10 +341,7 @@ func (buf *Buffer) MoveVert(dir int) {
 		lineEnd := lineContentEnd(buf, targetLine)
 		lineLen := runeCount(buf.Rope, lineStart, lineEnd)
 
-		goal := cur.Goal
-		if goal > lineLen {
-			goal = lineLen
-		}
+		goal := min(cur.Goal, lineLen)
 
 		cur.Offset = OffsetForLineCol(buf, targetLine, goal)
 	}
@@ -417,11 +407,7 @@ func LineCount(buf *Buffer) int {
 }
 
 func LineCol(buf *Buffer, offset int) (line, col int) {
-	offset = normalizeOffset(buf.Rope, offset)
-
-	if offset < 0 {
-		offset = 0
-	}
+	offset = max(normalizeOffset(buf.Rope, offset), 0)
 	if offset > buf.Rope.Len() {
 		offset = buf.Rope.Len()
 	}
@@ -470,10 +456,7 @@ func OffsetForLineCol(buf *Buffer, line int, col int) int {
 
 func LineText(buf *Buffer, line int) string {
 	start := OffsetForLine(buf, line)
-	end := lineContentEnd(buf, line)
-	if end < start {
-		end = start
-	}
+	end := max(lineContentEnd(buf, line), start)
 
 	return string(buf.Rope.Slice(start, end))
 }
@@ -527,10 +510,7 @@ func prevRuneStart(r *rope.Node, offset int) int {
 		size = 1
 	}
 
-	start := offset - size
-	if start < 0 {
-		start = 0
-	}
+	start := max(offset-size, 0)
 
 	return start
 }
