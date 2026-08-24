@@ -10,7 +10,7 @@
 - Quick and easy keyboard- and command-oriented text manipulation
 
 ## Requirements
-- Go 1.26.4
+- Go 1.27
 - Make
 - (See [flake.nix](./flake.nix))
 
