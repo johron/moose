@@ -99,7 +99,7 @@ func DefaultActionManager() ActionManager {
 			Action{
 				Bindings: []Binding{
 					Binding{
-						Type:  BindingSingle,
+						Type:   BindingSingle,
 						Single: "ctrl+tab",
 					},
 				},
@@ -123,7 +123,7 @@ func DefaultActionManager() ActionManager {
 			Action{
 				Bindings: []Binding{
 					Binding{
-						Type:  BindingSingle,
+						Type:   BindingSingle,
 						Single: "ctrl+shift+tab",
 					},
 				},

@@ -1,17 +1,17 @@
 package extension
 
 import (
+	"embed"
 	"fmt"
 	lua "github.com/yuin/gopher-lua"
 	"moose/internal/editor"
-	"embed"
 	"path/filepath"
 	"strings"
 )
 
 type ExtensionManager struct {
-	L *lua.LState
-	M *editor.Model
+	L           *lua.LState
+	M           *editor.Model
 	LoadedFiles []string
 }
 
@@ -76,7 +76,6 @@ func (em *ExtensionManager) registerEmbedSearcher() {
 
 	packageLoaders.Append(embedSearcher)
 }
-
 
 func (em *ExtensionManager) Close() {
 	if em.L != nil {

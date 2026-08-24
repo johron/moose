@@ -30,34 +30,34 @@ func (m *Model) CycleActiveBuffer(horisontal float32, vertical float32) {
 }
 
 func (m *Model) RemoveActiveBuffer() {
-    if len(m.BM.Buffers) == 0 {
-        m.BM.Buffers = []buffer.Buffer{buffer.NewBuffer()}
-        m.BM.CurrentIdx = 0
-        return
-    }
+	if len(m.BM.Buffers) == 0 {
+		m.BM.Buffers = []buffer.Buffer{buffer.NewBuffer()}
+		m.BM.CurrentIdx = 0
+		return
+	}
 
-    removedIdx := m.BM.CurrentIdx
-    if removedIdx < 0 || removedIdx >= len(m.BM.Buffers) {
-        return
-    }
+	removedIdx := m.BM.CurrentIdx
+	if removedIdx < 0 || removedIdx >= len(m.BM.Buffers) {
+		return
+	}
 
-    ws, ok := m.LM.Workspaces[m.LM.ActiveIdx]
-    if !ok || !ws.RootContainer.ContainsBufferIdx(removedIdx) {
-        return
-    }
+	ws, ok := m.LM.Workspaces[m.LM.ActiveIdx]
+	if !ok || !ws.RootContainer.ContainsBufferIdx(removedIdx) {
+		return
+	}
 
-    newActiveIdx := m.LM.RemoveActiveBufferAndReindex(removedIdx)
-    m.BM.Buffers = slices.Delete(m.BM.Buffers, removedIdx, removedIdx+1)
+	newActiveIdx := m.LM.RemoveActiveBufferAndReindex(removedIdx)
+	m.BM.Buffers = slices.Delete(m.BM.Buffers, removedIdx, removedIdx+1)
 
-    if len(m.BM.Buffers) == 0 {
-        m.BM.Buffers = []buffer.Buffer{buffer.NewBuffer()}
-        m.BM.CurrentIdx = 0
-        return
-    }
+	if len(m.BM.Buffers) == 0 {
+		m.BM.Buffers = []buffer.Buffer{buffer.NewBuffer()}
+		m.BM.CurrentIdx = 0
+		return
+	}
 
-    if newActiveIdx < 0 || newActiveIdx >= len(m.BM.Buffers) {
-        newActiveIdx = len(m.BM.Buffers) - 1
-    }
+	if newActiveIdx < 0 || newActiveIdx >= len(m.BM.Buffers) {
+		newActiveIdx = len(m.BM.Buffers) - 1
+	}
 
-    m.BM.CurrentIdx = newActiveIdx
+	m.BM.CurrentIdx = newActiveIdx
 }

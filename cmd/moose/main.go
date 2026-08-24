@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"moose/internal/editor"
-	"moose/internal/extension"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/gdamore/tcell/v3"
 	"golang.design/x/clipboard"
-	"github.com/davecgh/go-spew/spew"
+	"moose/internal/editor"
+	"moose/internal/extension"
+	"os"
 )
 
 func main() {
