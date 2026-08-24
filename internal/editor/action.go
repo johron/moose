@@ -1,6 +1,7 @@
 package editor
 
 import (
+	"context"
 	"moose/internal/about"
 	"moose/internal/buffer"
 	"moose/internal/layout"
@@ -511,13 +512,17 @@ func DefaultActionManager() ActionManager {
 				Commands: []string{"p", "paste"},
 				AskArgs:  false,
 				Callback: func(m *Model, args []string) {
-					text := clipboard.Read(clipboard.FmtText)
+					text, err := clipboard.Read(context.Background(), clipboard.FmtText)
+					if err != nil {
+						m.DebugLog = "moose.error:Clipboard read failed: " + err.Error()
+						return
+					}
 
-					if string(text) != "" {
+					if s := string(text); s != "" {
 						if m.Mode == ModePalette {
-							m.BM.PaletteBuffer.Insert(string(text))
+							m.BM.PaletteBuffer.Insert(s)
 						} else {
-							m.BM.Current().Insert(string(text))
+							m.BM.Current().Insert(s)
 						}
 					}
 				},
