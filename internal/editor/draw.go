@@ -49,7 +49,7 @@ func (m *Model) generateChordStr() string {
 
 func (m *Model) DrawPalette(rect layout.Rect) {
 	for col := 0; col < rect.Width; col++ {
-		m.Screen.SetContent(rect.X+col, rect.Y, ' ', nil, m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Style.PaletteBarBackground)).Foreground(tcell.GetColor(m.Config.Style.PaletteBarForeground)))
+		m.Screen.SetContent(rect.X+col, rect.Y, ' ', nil, m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Colors.PaletteBarBackground)).Foreground(tcell.GetColor(m.Config.Colors.PaletteBarForeground)))
 	}
 
 	modeStr := m.Mode.String()
@@ -62,7 +62,7 @@ func (m *Model) DrawPalette(rect layout.Rect) {
 			modeStr += " (replace)"
 		}
 	}
-	m.Screen.PutStrStyled(rect.Width-(len(modeStr)+1), rect.Y, strings.ToUpper(modeStr), m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.PaletteBarForeground)).Background(tcell.GetColor(m.Config.Style.PaletteBarBackground)))
+	m.Screen.PutStrStyled(rect.Width-(len(modeStr)+1), rect.Y, strings.ToUpper(modeStr), m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Colors.PaletteBarForeground)).Background(tcell.GetColor(m.Config.Colors.PaletteBarBackground)))
 
 	splitStr := ""
 	if m.LM.CurrentSplit == layout.SplitHorizontal {
@@ -70,28 +70,42 @@ func (m *Model) DrawPalette(rect layout.Rect) {
 	} else {
 		splitStr = "V"
 	}
-	m.Screen.PutStrStyled(rect.Width-(len(modeStr)+1)-5, rect.Y, splitStr, m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.PaletteBarForeground)).Background(tcell.GetColor(m.Config.Style.PaletteBarBackground)))
+	m.Screen.PutStrStyled(rect.Width-(len(modeStr)+1)-(m.Config.Properties.GutterWidth+1), rect.Y, splitStr, m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Colors.PaletteBarForeground)).Background(tcell.GetColor(m.Config.Colors.PaletteBarBackground)))
 
-	populatedWorkspaces := []string{strconv.Itoa(m.LM.ActiveIdx + 1)}
+	populatedWorkspaces := []int{m.LM.ActiveIdx + 1}
 	for workspaceIdx, workspace := range m.LM.Workspaces {
 		if workspaceIdx == m.LM.ActiveIdx {
 			continue
 		}
 
 		if !workspace.IsEmpty() {
-			populatedWorkspaces = append(populatedWorkspaces, strconv.Itoa(workspaceIdx+1))
+			populatedWorkspaces = append(populatedWorkspaces, workspaceIdx+1)
 		}
 	}
+
 	slices.Sort(populatedWorkspaces)
-	workspacesStr := strings.Join(populatedWorkspaces, " ")
-	m.Screen.PutStrStyled(1, rect.Y, workspacesStr, m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.WorkspaceForeground)).Background(tcell.GetColor(m.Config.Style.WorkspaceBackground)))
+	strWorkspaces := make([]string, len(populatedWorkspaces))
+
+	for i, v := range populatedWorkspaces {
+	    strWorkspaces[i] = strconv.Itoa(v)
+	}
+
+	workspacesStr := strings.Join(strWorkspaces, " ")
+
+	m.Screen.PutStrStyled(1, rect.Y, workspacesStr, m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Colors.WorkspaceForeground)).Background(tcell.GetColor(m.Config.Colors.WorkspaceBackground)))
+
+	for idx, workspace := range populatedWorkspaces {
+		if workspace == m.LM.ActiveIdx + 1 {
+			m.Screen.SetContent(idx * 2 + 1, rect.Y, '0' + rune(m.LM.ActiveIdx + 1), nil, m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Colors.WorkspaceBackgroundActive)).Foreground(tcell.GetColor(m.Config.Colors.WorkspaceForegroundActive)))
+		}
+	}
 
 	chordStr := m.generateChordStr()
-	m.Screen.PutStrStyled(len(workspacesStr)+2, rect.Y, chordStr, m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.PaletteBarForeground)).Background(tcell.GetColor(m.Config.Style.PaletteBarBackground)))
-	m.Screen.PutStrStyled(len(chordStr)+1, rect.Y, m.DebugLog, m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.PaletteBarForeground)).Background(tcell.GetColor(m.Config.Style.PaletteInputBackground)))
+	m.Screen.PutStrStyled(len(workspacesStr)+2, rect.Y, chordStr, m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Colors.PaletteBarForeground)).Background(tcell.GetColor(m.Config.Colors.PaletteBarBackground)))
+	m.Screen.PutStrStyled(len(workspacesStr)+2+len(chordStr)+1, rect.Y, m.DebugLog, m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Colors.PaletteBarForeground)).Background(tcell.GetColor(m.Config.Colors.PaletteBarBackground)))
 
 	if m.Mode == ModePalette {
-		m.Screen.PutStrStyled(0, rect.Y+1, m.BM.PaletteBuffer.String(), m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.PaletteInputForeground)).Background(tcell.GetColor(m.Config.Style.PaletteInputBackground)))
+		m.Screen.PutStrStyled(0, rect.Y+1, m.BM.PaletteBuffer.String(), m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Colors.PaletteInputForeground)).Background(tcell.GetColor(m.Config.Colors.PaletteInputBackground)))
 
 		for _, cur := range m.BM.PaletteBuffer.CM.Cursors {
 			line, col := buffer.LineCol(&m.BM.PaletteBuffer, cur.Offset)
@@ -104,14 +118,14 @@ func (m *Model) DrawPalette(rect layout.Rect) {
 
 			ch := buffer.RuneAt(&m.BM.PaletteBuffer, cur.Offset)
 
-			m.Screen.SetContent(col, rect.Y+1, ch, nil, m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Style.CursorColorWrite)))
+			m.Screen.SetContent(col, rect.Y+1, ch, nil, m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Colors.CursorColorWrite)))
 		}
 	} else if strings.HasPrefix(m.BM.PaletteBuffer.String(), "moose.info:") {
-		m.Screen.PutStrStyled(0, rect.Y+1, string([]rune(m.BM.PaletteBuffer.String())[11:]), m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.InfoMsgForeground)).Background(tcell.GetColor(m.Config.Style.InfoMsgBackground)))
+		m.Screen.PutStrStyled(0, rect.Y+1, string([]rune(m.BM.PaletteBuffer.String())[11:]), m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Colors.InfoMsgForeground)).Background(tcell.GetColor(m.Config.Colors.InfoMsgBackground)))
 	} else if strings.HasPrefix(m.BM.PaletteBuffer.String(), "moose.warn:") {
-		m.Screen.PutStrStyled(0, rect.Y+1, string([]rune(m.BM.PaletteBuffer.String())[11:]), m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.WarnMsgForeground)).Background(tcell.GetColor(m.Config.Style.WarnMsgBackground)))
+		m.Screen.PutStrStyled(0, rect.Y+1, string([]rune(m.BM.PaletteBuffer.String())[11:]), m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Colors.WarnMsgForeground)).Background(tcell.GetColor(m.Config.Colors.WarnMsgBackground)))
 	} else if strings.HasPrefix(m.BM.PaletteBuffer.String(), "moose.error:") {
-		m.Screen.PutStrStyled(0, rect.Y+1, string([]rune(m.BM.PaletteBuffer.String())[12:]), m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.ErrorMsgForeground)).Background(tcell.GetColor(m.Config.Style.ErrorMsgBackground)))
+		m.Screen.PutStrStyled(0, rect.Y+1, string([]rune(m.BM.PaletteBuffer.String())[12:]), m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Colors.ErrorMsgForeground)).Background(tcell.GetColor(m.Config.Colors.ErrorMsgBackground)))
 	}
 }
 
@@ -185,13 +199,13 @@ func (m *Model) DrawContainerTabs(c *layout.ContainerBuffers, rect layout.Rect) 
 	length := 0
 	for i, tab := range tabs {
 		if length+len(tab)+2 > rect.Width {
-			m.Screen.PutStrStyled(rect.X+length, rect.Y, ">", m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.TabForeground)).Background(tcell.GetColor(m.Config.Style.TabBackground)))
+			m.Screen.PutStrStyled(rect.X+length, rect.Y, ">", m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Colors.TabForeground)).Background(tcell.GetColor(m.Config.Colors.TabBackground)))
 			return
 		}
 
-		style := m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Style.TabBackground)).Foreground(tcell.GetColor(m.Config.Style.TabForeground))
+		style := m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Colors.TabBackground)).Foreground(tcell.GetColor(m.Config.Colors.TabForeground))
 		if i == activeTabIdx {
-			style = style.Foreground(tcell.GetColor(m.Config.Style.TabForegroundActive)).Background(tcell.GetColor(m.Config.Style.TabBackgroundActive))
+			style = style.Foreground(tcell.GetColor(m.Config.Colors.TabForegroundActive)).Background(tcell.GetColor(m.Config.Colors.TabBackgroundActive))
 		}
 
 		tabStr := strconv.Itoa(int(math.Abs(float64((activeTabIdx - i))))) + ": " + tab
@@ -232,13 +246,13 @@ func (m *Model) DrawBuffer(buf *buffer.Buffer, isActive bool, rect layout.Rect) 
 
 		lineNum := j + buf.TopLine
 		relLine := lineNum - curLine
-		nums := fmt.Sprintf("%4d ", int(math.Abs(float64(relLine))))
+		nums := fmt.Sprintf("%*d ", m.Config.Properties.GutterWidth, int(math.Abs(float64(relLine))))
 		r := []rune(nums + expandTabs(line))
 		if len(r)+1 > rect.Width {
 			r = r[:rect.Width]
 		}
 
-		m.Screen.PutStrStyled(rect.X, rect.Y+j, string(r), m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Style.MainForeground)).Background(tcell.GetColor(m.Config.Style.MainBackground)))
+		m.Screen.PutStrStyled(rect.X, rect.Y+j, string(r), m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Colors.MainForeground)).Background(tcell.GetColor(m.Config.Colors.MainBackground)))
 	}
 
 	if isActive {
@@ -257,9 +271,9 @@ func (m *Model) DrawBuffer(buf *buffer.Buffer, isActive bool, rect layout.Rect) 
 			ch := buffer.RuneAt(buf, cur.Offset)
 
 			if m.Mode == ModeWrite {
-				m.Screen.SetContent(rect.X+visCol+5, rect.Y+screenLine, ch, nil, m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Style.CursorColorWrite)))
+				m.Screen.SetContent(rect.X+visCol+m.Config.Properties.GutterWidth+1, rect.Y+screenLine, ch, nil, m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Colors.CursorColorWrite)))
 			} else {
-				m.Screen.SetContent(rect.X+visCol+5, rect.Y+screenLine, ch, nil, m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Style.CursorColor)))
+				m.Screen.SetContent(rect.X+visCol+m.Config.Properties.GutterWidth+1, rect.Y+screenLine, ch, nil, m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Colors.CursorColor)))
 			}
 		}
 	}

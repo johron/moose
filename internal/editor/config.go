@@ -7,10 +7,17 @@ import (
 
 type Config struct {
 	StyleDefault tcell.Style
-	Style        Style
+	Colors       Colors
+	Properties   Properties
 }
 
-type Style struct {
+type Properties struct {
+	GutterWidth int    `default:"4"`
+	TabSpaces 	bool   `default:"false"`
+	TabWidthSpaces int `default:"4"`
+}
+
+type Colors struct {
 	MainBackground            string `default:"#090603"`
 	MainForeground            string `default:"#dddddd"`
 	LineNumberBackground      string `default:"#090603"`
@@ -43,12 +50,12 @@ func DefaultConfig() Config {
 		panic(err)
 	}
 
-	config.StyleDefault = tcell.StyleDefault.Background(tcell.GetColor(config.Style.MainBackground)).Foreground(tcell.GetColor(config.Style.MainForeground))
+	config.StyleDefault = tcell.StyleDefault.Background(tcell.GetColor(config.Colors.MainBackground)).Foreground(tcell.GetColor(config.Colors.MainForeground))
 
 	return config
 }
 
 func (m *Model) ReloadConfig() {
-	m.Config.StyleDefault = m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Style.MainBackground)).Foreground(tcell.GetColor(m.Config.Style.MainForeground))
+	m.Config.StyleDefault = m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Colors.MainBackground)).Foreground(tcell.GetColor(m.Config.Colors.MainForeground))
 	m.Screen.SetStyle(m.Config.StyleDefault)
 }

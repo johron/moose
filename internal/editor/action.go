@@ -597,8 +597,12 @@ func DefaultActionManager() ActionManager {
 					},
 				},
 				Callback: func(m *Model, args []string) {
-					for _ = range 4 {
-						m.BM.Current().Insert(" ")
+					if m.Config.Properties.TabSpaces == true {
+						for _ = range m.Config.Properties.TabWidthSpaces {
+							m.BM.Current().Insert(" ")
+						}
+					} else {
+						m.BM.Current().Insert("\t")
 					}
 				},
 			},
