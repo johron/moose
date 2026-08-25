@@ -34,6 +34,8 @@ func NewModel(screen tcell.Screen) Model {
 		ShouldQuit: false,
 	}
 
+	model.ReloadConfig()
+
 	return model
 }
 func (m *Model) CurrentActionSet() []Action {

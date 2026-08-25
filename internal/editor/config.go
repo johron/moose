@@ -49,4 +49,6 @@ func DefaultConfig() Config {
 }
 
 func (m *Model) ReloadConfig() {
+	m.Config.StyleDefault = m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Style.MainBackground)).Foreground(tcell.GetColor(m.Config.Style.MainForeground))
+	m.Screen.SetStyle(m.Config.StyleDefault)
 }
