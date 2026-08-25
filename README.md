@@ -1,5 +1,5 @@
 # Moose
-- Terminal-based text editor written in Go, inspired by Emacs, Vim and VS Code.
+Terminal-based text editor written in Go, inspired by Emacs, Vim and VS Code.
 
 ## Features (+Wanted features)
 - Modal editing
