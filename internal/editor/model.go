@@ -38,6 +38,12 @@ func NewModel(screen tcell.Screen) Model {
 
 	return model
 }
+
+func (m *Model) ReloadConfig() {
+	m.Config.StyleDefault = m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Colors.MainBackground)).Foreground(tcell.GetColor(m.Config.Colors.MainForeground))
+	m.Screen.SetStyle(m.Config.StyleDefault)
+}
+
 func (m *Model) CurrentActionSet() []Action {
 	switch m.Mode {
 	case ModeNormal:

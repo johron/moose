@@ -1,6 +1,3 @@
-test = require("test")
-test.run()
-
 colors = {
 	MainBackground = "#0E142E",
 	MainForeground = "#dddddd",
