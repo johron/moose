@@ -3,17 +3,20 @@ package extension
 import (
 	"embed"
 	"fmt"
-	lua "github.com/yuin/gopher-lua"
 	"moose/internal/editor"
+	"moose/internal/extension/highlight"
 	"path/filepath"
 	"strings"
+
+	lua "github.com/yuin/gopher-lua"
 )
 
 type ExtensionManager struct {
 	L           *lua.LState
 	M           *editor.Model
+	HE			*highlight.HighlightEngine
 	LoadedFiles []string
-	
+
 	currentDiskDir  string
 	currentEmbedDir string
 }
@@ -25,9 +28,10 @@ func NewExtensionManager(m *editor.Model) *ExtensionManager {
 	em := &ExtensionManager{
 		L: lua.NewState(),
 		M: m,
+		HE: highlight.NewHighlightEngine(),
 	}
 
-	lua.OpenPackage(em.L) 
+	lua.OpenPackage(em.L)
 
 	em.registerAPI()
 	em.registerExtensionSearcher()
