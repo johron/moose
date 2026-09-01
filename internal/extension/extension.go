@@ -4,7 +4,6 @@ import (
 	"embed"
 	"fmt"
 	"moose/internal/editor"
-	"moose/internal/extension/highlight"
 	"path/filepath"
 	"strings"
 
@@ -14,7 +13,6 @@ import (
 type ExtensionManager struct {
 	L           *lua.LState
 	M           *editor.Model
-	HE			*highlight.HighlightEngine
 	LoadedFiles []string
 
 	currentDiskDir  string
@@ -28,7 +26,6 @@ func NewExtensionManager(m *editor.Model) *ExtensionManager {
 	em := &ExtensionManager{
 		L: lua.NewState(),
 		M: m,
-		HE: highlight.NewHighlightEngine(),
 	}
 
 	lua.OpenPackage(em.L)
@@ -131,6 +128,7 @@ func (em *ExtensionManager) registerAPI() {
 	moose := em.L.NewTable()
 	em.L.SetGlobal("ms", moose)
 	moose.RawSetString("config", GetConfigTable(em))
+	moose.RawSetString("syntax", GetSyntaxTable(em))
 }
 
 func (em *ExtensionManager) LoadFile(path string) error {
