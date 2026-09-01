@@ -1,6 +1,9 @@
 # Moose
 Terminal-based text editor written in Go, inspired by Emacs, Vim and VS Code.
 
+## In-dev screenshot
+<img width="480" height="262" alt="image" src="https://github.com/user-attachments/assets/99b80245-5044-4a30-97db-731d5dca6a67" />
+
 ## Features (+Wanted features)
 - Modal editing
 - Advanced layout with splitting and workspaces
