@@ -1,8 +1,9 @@
 package extension
 
 import (
-	lua "github.com/yuin/gopher-lua"
 	"moose/internal/extension/highlight"
+
+	lua "github.com/yuin/gopher-lua"
 )
 
 func GetSyntaxTable(em *ExtensionManager) *lua.LTable {

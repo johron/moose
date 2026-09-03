@@ -87,7 +87,7 @@ func (m *Model) DrawPalette(rect layout.Rect) {
 	strWorkspaces := make([]string, len(populatedWorkspaces))
 
 	for i, v := range populatedWorkspaces {
-	    strWorkspaces[i] = strconv.Itoa(v)
+		strWorkspaces[i] = strconv.Itoa(v)
 	}
 
 	workspacesStr := strings.Join(strWorkspaces, " ")
@@ -95,8 +95,8 @@ func (m *Model) DrawPalette(rect layout.Rect) {
 	m.Screen.PutStrStyled(1, rect.Y, workspacesStr, m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Colors.WorkspaceForeground)).Background(tcell.GetColor(m.Config.Colors.WorkspaceBackground)))
 
 	for idx, workspace := range populatedWorkspaces {
-		if workspace == m.LM.ActiveIdx + 1 {
-			m.Screen.SetContent(idx * 2 + 1, rect.Y, '0' + rune(m.LM.ActiveIdx + 1), nil, m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Colors.WorkspaceBackgroundActive)).Foreground(tcell.GetColor(m.Config.Colors.WorkspaceForegroundActive)))
+		if workspace == m.LM.ActiveIdx+1 {
+			m.Screen.SetContent(idx*2+1, rect.Y, '0'+rune(m.LM.ActiveIdx+1), nil, m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Colors.WorkspaceBackgroundActive)).Foreground(tcell.GetColor(m.Config.Colors.WorkspaceForegroundActive)))
 		}
 	}
 
