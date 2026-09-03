@@ -14,11 +14,11 @@ import "C"
 
 import (
 	"fmt"
-	"sync"
-	"unsafe"
-	"strings"
-	"unicode"
 	"path/filepath"
+	"strings"
+	"sync"
+	"unicode"
+	"unsafe"
 
 	sitter "github.com/smacker/go-tree-sitter"
 )
