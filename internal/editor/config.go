@@ -54,5 +54,3 @@ func DefaultConfig() Config {
 
 	return config
 }
-
-

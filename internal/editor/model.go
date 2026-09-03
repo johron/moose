@@ -1,9 +1,10 @@
 package editor
 
 import (
-	"github.com/gdamore/tcell/v3"
 	"moose/internal/buffer"
 	"moose/internal/layout"
+
+	"github.com/gdamore/tcell/v3"
 )
 
 type Model struct {
