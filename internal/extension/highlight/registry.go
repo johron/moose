@@ -20,7 +20,7 @@ import (
 	"unicode"
 	"path/filepath"
 
-	sitter "github.com/smacker/go-tree-sitter"
+	sitter "github.com/tree-sitter/go-tree-sitter"
 )
 
 type LanguageSpec struct {
@@ -82,11 +82,8 @@ func RegisterTreeSitterLang(langName, parserPath, queryScm string) error {
 	}
 
 	cleanScm := CleanScmQuery(queryScm)
-	query, err := sitter.NewQuery([]byte(cleanScm), sitterLang)
+	query, err := sitter.NewQuery(sitterLang, string([]byte(cleanScm)))
 	if err != nil {
-		if qErr, ok := err.(*sitter.QueryError); ok {
-			return fmt.Errorf("query compile error at byte offset %d (type: %v)", qErr.Offset, qErr.Type)
-		}
 		return fmt.Errorf("failed to compile highlight query for %s: %w", langName, err)
 	}
 
