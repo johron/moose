@@ -13,7 +13,7 @@ build:
 
 release:
 	@mkdir -p $(BUILD_DIR)
-	CGO_ENABLED=0 go build -trimpath -buildvcs=false -ldflags="$(LDFLAGS)" -o "$(BUILD_DIR)/$(BINARY_NAME)" $(MODULE_PATH)
+	go build -v -trimpath -buildvcs=false -ldflags="$(LDFLAGS)" -o "$(BUILD_DIR)/$(BINARY_NAME)" $(MODULE_PATH)
 
 run:
 	go run -ldflags="$(LDFLAGS)" $(MODULE_PATH)

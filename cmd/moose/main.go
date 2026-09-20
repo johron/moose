@@ -6,11 +6,11 @@ import (
 	"github.com/gdamore/tcell/v3"
 	"golang.design/x/clipboard"
 	"moose/internal/editor"
-	"moose/internal/extension"
 	"os"
 )
 
 func main() {
+	fmt.Println("hi")
 	s, err := tcell.NewScreen()
 	if err != nil {
 		fmt.Printf("[moose-error] %v", err)
@@ -81,7 +81,7 @@ func main() {
 }
 
 func init_extensions(m *editor.Model) {
-	em := extension.NewExtensionManager(m)
+	em := editor.NewExtensionManager(m)
 	if err := em.LoadString("test", "print(ms)"); err != nil {
 		m.Mode = editor.ModeNormal
 		m.BM.PaletteBuffer.Clear()
