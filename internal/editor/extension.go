@@ -3,8 +3,6 @@ package editor
 import (
 	"embed"
 	"fmt"
-	"moose/internal/editor/highlight"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -129,7 +127,6 @@ func (em *ExtensionManager) registerAPI() {
 	moose := em.L.NewTable()
 	em.L.SetGlobal("ms", moose)
 	moose.RawSetString("config", GetConfigTable(em))
-	moose.RawSetString("syntax", GetSyntaxTable(em))
 }
 
 func (em *ExtensionManager) LoadFile(path string) error {
@@ -179,41 +176,4 @@ func (em *ExtensionManager) LoadString(name string, src string) error {
 
 	em.LoadedFiles = append(em.LoadedFiles, name)
 	return nil
-}
-
-func GetSyntaxTable(em *ExtensionManager) *lua.LTable {
-	syntax := em.L.NewTable()
-	em.L.SetFuncs(syntax, map[string]lua.LGFunction{
-		"registerLang": luaRegisterLanguage,
-	})
-	return syntax
-}
-
-func luaRegisterLanguage(L *lua.LState) int {
-	idx := 1
-	if L.GetTop() >= 2 && L.Get(1).Type() == lua.LTTable {
-		tb1 := L.ToTable(1)
-		if tb1.RawGetString("name") == lua.LNil {
-			idx = 2
-		}
-	}
-
-	tb := L.CheckTable(idx)
-
-	langName := tb.RawGetString("name").String()
-	parserPath := tb.RawGetString("parser_path").String()
-	queryScm := tb.RawGetString("query").String()
-
-	if langName == "" || langName == "nil" || parserPath == "" || parserPath == "nil" {
-		L.ArgError(idx, "expected table with 'name' and 'parser_path' fields")
-		return 0
-	}
-
-	err := highlight.RegisterTreeSitterLang(langName, parserPath, queryScm)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "warning: failed to register language %s: %v\n", langName, err)
-		return 0
-	}
-
-	return 0
 }

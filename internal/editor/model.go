@@ -1,8 +1,11 @@
 package editor
 
 import (
+	"os"
+
 	"moose/internal/buffer"
 	"moose/internal/layout"
+	"moose/internal/highlight"
 
 	"github.com/gdamore/tcell/v3"
 )
@@ -16,17 +19,18 @@ type Model struct {
 	LM         layout.LayoutManager
 	ShouldQuit bool
 	DebugLog   string
+	Highlighter *highlight.Highlighter
 }
 
 func NewModel(screen tcell.Screen) Model {
-	blank := buffer.NewBuffer()
+	// blank := buffer.NewBuffer()
 
 	model := Model{
 		Screen: screen,
 		Config: DefaultConfig(),
 		Mode:   ModeNormal,
 		BM: buffer.BufferManager{
-			Buffers:       []buffer.Buffer{blank},
+			Buffers:       []buffer.Buffer{},
 			CurrentIdx:    0,
 			PaletteBuffer: buffer.NewBuffer(),
 		},
@@ -34,6 +38,12 @@ func NewModel(screen tcell.Screen) Model {
 		LM:         layout.NewLayoutManager(),
 		ShouldQuit: false,
 	}
+
+	highlighter, err := highlight.NewHighlighter(DefaultTheme)
+	if err != nil {
+		os.Exit(1)
+	}
+	model.Highlighter = highlighter
 
 	model.ReloadConfig()
 

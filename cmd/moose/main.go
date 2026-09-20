@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-	fmt.Println("hi")
 	s, err := tcell.NewScreen()
 	if err != nil {
 		fmt.Printf("[moose-error] %v", err)
@@ -28,7 +27,8 @@ func main() {
 	}
 
 	m := editor.NewModel(s)
-	m.AddBuffer(false)
+	//m.AddBuffer(false)
+	m.AddBufferFromPath("test.lua", false)
 
 	init_extensions(&m)
 

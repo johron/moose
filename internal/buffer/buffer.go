@@ -6,7 +6,9 @@ import (
 	"slices"
 	"unicode"
 	"unicode/utf8"
+	"moose/internal/highlight"
 
+	tree_sitter "github.com/tree-sitter/go-tree-sitter"
 	"github.com/zyedidia/rope"
 )
 
@@ -42,6 +44,12 @@ type Buffer struct {
 	Path    string
 	TopLine int
 	History UndoStack
+
+	Language string
+	HighlightQuery []byte
+	Tree          *tree_sitter.Tree
+	Spans         []highlight.HighlightSpan
+	IsDirty       bool
 }
 
 func NewBuffer() Buffer {
@@ -52,6 +60,8 @@ func NewBuffer() Buffer {
 			Cursors:    []Cursor{{Offset: 0, Goal: 0}},
 			PrimaryIdx: 0,
 		},
+		IsDirty: true,
+		Language: "lua",
 	}
 }
 
@@ -68,6 +78,13 @@ func NewBufferFromPath(path string) Buffer {
 	b.LI.Rebuild(b.Rope)
 	b.Path = path
 	b.History = UndoStack{}
+
+	b.Language = highlight.DetectLanguage(path)
+	if b.Language != "" {
+		if queryData, err := highlight.GetQuery(b.Language); err == nil {
+			b.HighlightQuery = queryData
+		}
+	}
 
 	return b
 }

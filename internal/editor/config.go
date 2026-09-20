@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"strings"
 
+	"moose/internal/highlight"
+
 	"github.com/creasty/defaults"
 	"github.com/gdamore/tcell/v3"
 	lua "github.com/yuin/gopher-lua"
@@ -47,6 +49,25 @@ type Colors struct {
 	TabForeground             string `default:"#b9b9b9"`
 	TabBackgroundActive       string `default:"#3b3b3b"`
 	TabForegroundActive       string `default:"#dddddd"`
+}
+
+var DefaultTheme = highlight.StyleMap{
+	"keyword":          tcell.StyleDefault.Foreground(tcell.GetColor("#c678dd")).Bold(true),
+	"keyword.function": tcell.StyleDefault.Foreground(tcell.GetColor("#c678dd")).Bold(true),
+	"keyword.modifier": tcell.StyleDefault.Foreground(tcell.GetColor("#c678dd")),
+	"string":           tcell.StyleDefault.Foreground(tcell.GetColor("#98c379")),
+	"string.escape":    tcell.StyleDefault.Foreground(tcell.GetColor("#56b6c2")),
+	"comment":          tcell.StyleDefault.Foreground(tcell.GetColor("#5c6370")).Italic(true),
+	"function":         tcell.StyleDefault.Foreground(tcell.GetColor("#61afef")),
+	"function.method":  tcell.StyleDefault.Foreground(tcell.GetColor("#61afef")),
+	"variable":         tcell.StyleDefault.Foreground(tcell.GetColor("#abb2bf")),
+	"variable.builtin": tcell.StyleDefault.Foreground(tcell.GetColor("#e5c07b")),
+	"variable.parameter": tcell.StyleDefault.Foreground(tcell.GetColor("#e06c75")),
+	"property":         tcell.StyleDefault.Foreground(tcell.GetColor("#e06c75")),
+	"number":           tcell.StyleDefault.Foreground(tcell.GetColor("#d19a66")),
+	"constant.builtin": tcell.StyleDefault.Foreground(tcell.GetColor("#d19a66")),
+	"module":           tcell.StyleDefault.Foreground(tcell.GetColor("#e5c07b")),
+	"operator":         tcell.StyleDefault.Foreground(tcell.GetColor("#56b6c2")),
 }
 
 func DefaultConfig() Config {

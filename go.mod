@@ -5,7 +5,8 @@ go 1.27
 require (
 	github.com/creasty/defaults v1.8.0
 	github.com/davecgh/go-spew v1.1.1
-	github.com/gdamore/tcell/v3 v3.4.2
+	github.com/ebitengine/purego v0.11.0
+	github.com/gdamore/tcell/v3 v3.5.0
 	github.com/tree-sitter/go-tree-sitter v0.25.0
 	github.com/yuin/gopher-lua v1.1.2
 	github.com/zyedidia/rope v0.0.0-20210616205215-37fbf22eab3a
@@ -15,10 +16,13 @@ require (
 require (
 	github.com/clipperhouse/displaywidth v0.11.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
-	github.com/ebitengine/purego v0.10.2 // indirect
 	github.com/gdamore/encoding v1.0.1 // indirect
+	github.com/gdamore/tcell/v2 v2.13.10 // indirect
+	github.com/kreuzberg-dev/tree-sitter-language-pack v1.20.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.4.1 // indirect
 	github.com/mattn/go-pointer v0.0.1 // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
+	github.com/xberg-io/tree-sitter-language-pack/packages/go v1.20.0 // indirect
 	golang.design/x/x11 v0.2.0 // indirect
 	golang.org/x/exp/shiny v0.0.0-20260820142414-ca536658362e // indirect
 	golang.org/x/image v0.45.0 // indirect

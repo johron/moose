@@ -1,14 +1,18 @@
 package editor
 
 import (
+	"os"
 	"fmt"
 	"math"
 	"moose/internal/buffer"
 	"moose/internal/layout"
 	"moose/internal/util"
+	"moose/internal/highlight"
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/davecgh/go-spew/spew"
 
 	"github.com/gdamore/tcell/v3"
 )
@@ -190,7 +194,7 @@ func (m *Model) DrawContainerTabs(c *layout.ContainerBuffers, rect layout.Rect) 
 
 		buf := m.BM.Buffers[bufIdx]
 		if buf.Path == "" {
-			tabs = append(tabs, "Buffer "+strconv.Itoa(bufIdx))
+			tabs = append(tabs, "Buffer " + strconv.Itoa(bufIdx))
 		} else {
 			tabs = append(tabs, buf.Path)
 		}
@@ -226,60 +230,146 @@ func (m *Model) DrawContainerBuffers(c *layout.ContainerBuffers, rect layout.Rec
 	m.DrawBuffer(&m.BM.Buffers[c.Buffers[c.ActiveIdx]], c.Buffers[c.ActiveIdx] == m.BM.CurrentIdx, rect)
 }
 
+const tabWidth = 4
+
 func (m *Model) DrawBuffer(buf *buffer.Buffer, isActive bool, rect layout.Rect) {
-	primary := buf.CM.Cursors[buf.CM.PrimaryIdx]
-	curLine, _ := buffer.LineCol(buf, primary.Offset)
-	buf.ScrollToShow(curLine, rect.Height)
+    primary := buf.CM.Cursors[buf.CM.PrimaryIdx]
+    curLine, _ := buffer.LineCol(buf, primary.Offset)
+    buf.ScrollToShow(curLine, rect.Height)
 
-	startOffset := buffer.OffsetForLine(buf, buf.TopLine)
-	endOffset := buf.Rope.Len()
-	if endLine := buf.TopLine + rect.Height; endLine < buffer.LineCount(buf) {
-		endOffset = buffer.OffsetForLine(buf, endLine)
-	}
+    startOffset := buffer.OffsetForLine(buf, buf.TopLine)
+    endOffset := buf.Rope.Len()
+    if endLine := buf.TopLine + rect.Height; endLine < buffer.LineCount(buf) {
+        endOffset = buffer.OffsetForLine(buf, endLine)
+    }
 
-	visible := string(buf.Rope.Slice(startOffset, endOffset))
-	table := strings.SplitAfter(visible, "\n")
-	for j, line := range table {
-		if j+1 > rect.Height {
-			break
+    defaultStyle := m.Config.StyleDefault.
+        Foreground(tcell.GetColor(m.Config.Colors.MainForeground)).
+        Background(tcell.GetColor(m.Config.Colors.MainBackground))
+
+	if buf.IsDirty && m.Highlighter != nil && buf.Language != "" && len(buf.HighlightQuery) > 0 {
+        fullCode := []byte(buf.String())
+        spans, newTree, err := m.Highlighter.HighlightBuffer(buf.Language, fullCode, buf.HighlightQuery)
+		if err != nil {
+			os.WriteFile("output.txt", []byte(spew.Sdump(err)), 0644)
 		}
 
-		lineNum := j + buf.TopLine
-		relLine := lineNum - curLine
-		nums := fmt.Sprintf("%*d ", m.Config.Properties.GutterWidth, int(math.Abs(float64(relLine))))
-		r := []rune(nums + expandTabs(line))
-		if len(r)+1 > rect.Width {
-			r = r[:rect.Width]
-		}
+        if err == nil {
+            if buf.Tree != nil {
+                buf.Tree.Close()
+            }
+            buf.Tree = newTree
+            buf.Spans = spans
+        }
+        // buf.IsDirty = false
+    }
 
-		m.Screen.PutStrStyled(rect.X, rect.Y+j, string(r), m.Config.StyleDefault.Foreground(tcell.GetColor(m.Config.Colors.MainForeground)).Background(tcell.GetColor(m.Config.Colors.MainBackground)))
-	}
+    visible := string(buf.Rope.Slice(startOffset, endOffset))
+    table := strings.SplitAfter(visible, "\n")
+    
+    currentLineByteOffset := uint32(startOffset)
+    // tabWidth := m.Config.Properties.TabWidth
+    // if tabWidth <= 0 {
+    //     tabWidth = 4
+    // }
 
-	if isActive {
-		for _, cur := range buf.CM.Cursors {
-			line, col := buffer.LineCol(buf, cur.Offset)
-			screenLine := line - buf.TopLine
-			if screenLine < 0 || screenLine+1 > rect.Height {
-				continue
-			}
+    for j, line := range table {
+        if j+1 > rect.Height {
+            break
+        }
 
-			visCol := visualCol(buffer.LineText(buf, line), col)
-			if visCol+1 > rect.Width {
-				continue
-			}
+        lineNum := j + buf.TopLine
+        relLine := lineNum - curLine
+        gutterText := fmt.Sprintf("%*d ", m.Config.Properties.GutterWidth, int(math.Abs(float64(relLine))))
 
-			ch := buffer.RuneAt(buf, cur.Offset)
+        gutterStyle := defaultStyle.Foreground(tcell.ColorGray)
+        for gIdx, gCh := range gutterText {
+            if gIdx >= rect.Width {
+                break
+            }
+            m.Screen.SetContent(rect.X+gIdx, rect.Y+j, gCh, nil, gutterStyle)
+        }
 
-			if m.Mode == ModeWrite {
-				m.Screen.SetContent(rect.X+visCol+m.Config.Properties.GutterWidth+1, rect.Y+screenLine, ch, nil, m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Colors.CursorColorWrite)))
-			} else {
-				m.Screen.SetContent(rect.X+visCol+m.Config.Properties.GutterWidth+1, rect.Y+screenLine, ch, nil, m.Config.StyleDefault.Background(tcell.GetColor(m.Config.Colors.CursorColor)))
-			}
-		}
-	}
+        m.DrawStyledLine(
+            rect.X+len(gutterText),
+            rect.Y+j,
+            line,
+            currentLineByteOffset,
+            rect.Width-len(gutterText),
+            buf.Spans,
+            defaultStyle,
+            tabWidth,
+        )
+
+        currentLineByteOffset += uint32(len([]byte(line)))
+    }
+
+    if isActive {
+        for _, cur := range buf.CM.Cursors {
+            line, col := buffer.LineCol(buf, cur.Offset)
+            screenLine := line - buf.TopLine
+            if screenLine < 0 || screenLine+1 > rect.Height {
+                continue
+            }
+
+            visCol := visualCol(buffer.LineText(buf, line), col)
+            if visCol+1 > rect.Width {
+                continue
+            }
+
+            ch := buffer.RuneAt(buf, cur.Offset)
+            cursorBg := tcell.GetColor(m.Config.Colors.CursorColor)
+            if m.Mode == ModeWrite {
+                cursorBg = tcell.GetColor(m.Config.Colors.CursorColorWrite)
+            }
+
+            m.Screen.SetContent(
+                rect.X+visCol+m.Config.Properties.GutterWidth+1,
+                rect.Y+screenLine,
+                ch,
+                nil,
+                defaultStyle.Background(cursorBg),
+            )
+        }
+    }
 }
 
-const tabWidth = 4
+func (m *Model) DrawStyledLine(startX, y int, rawLine string, lineStartByte uint32, maxWidth int, spans []highlight.HighlightSpan, defaultStyle tcell.Style, tabWidth int) {
+    currentByte := lineStartByte
+    screenCol := 0
+
+    for _, ch := range rawLine {
+        if screenCol >= maxWidth {
+            break
+        }
+
+        chByteLen := uint32(len(string(ch)))
+
+        activeStyle := defaultStyle
+        for _, span := range spans {
+            if currentByte >= span.StartByte && currentByte < span.EndByte {
+                activeStyle = span.Style
+                break
+            }
+        }
+
+        if ch == '\t' {
+            spacesToDraw := tabWidth - (screenCol % tabWidth)
+            for s := 0; s < spacesToDraw; s++ {
+                if screenCol >= maxWidth {
+                    break
+                }
+                m.Screen.SetContent(startX+screenCol, y, ' ', nil, activeStyle)
+                screenCol++
+            }
+        } else {
+            m.Screen.SetContent(startX+screenCol, y, ch, nil, activeStyle)
+            screenCol++
+        }
+
+        currentByte += chByteLen
+    }
+}
 
 func expandTabs(s string) string {
 	var b strings.Builder
