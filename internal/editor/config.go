@@ -147,7 +147,7 @@ func HandleSet(em *ExtensionManager, L *lua.LState) int {
 		luaTable := L.CheckTable(2)
 		colors, err := parseColors(luaTable)
 		if err != nil {
-			L.RaiseError(err.Error())
+			L.RaiseError("%s", err.Error())
 			return 0
 		}
 		em.M.Config.Colors = colors
@@ -158,7 +158,7 @@ func HandleSet(em *ExtensionManager, L *lua.LState) int {
 		luaTable := L.CheckTable(2)
 		properties, err := parseProperties(luaTable)
 		if err != nil {
-			L.RaiseError(err.Error())
+			L.RaiseError("%s", err.Error())
 			return 0
 		}
 		em.M.Config.Properties = properties

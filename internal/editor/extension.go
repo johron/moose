@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"moose/internal/editor/highlight"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -210,7 +211,7 @@ func luaRegisterLanguage(L *lua.LState) int {
 
 	err := highlight.RegisterTreeSitterLang(langName, parserPath, queryScm)
 	if err != nil {
-		L.RaiseError("failed to register language %s: %v", langName, err)
+		fmt.Fprintf(os.Stderr, "warning: failed to register language %s: %v\n", langName, err)
 		return 0
 	}
 
